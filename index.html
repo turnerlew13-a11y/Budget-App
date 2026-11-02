@@ -40,6 +40,19 @@
       }
     }
 
+    /* Fix mobile iOS Safari intrinsic date picker overflow */
+    input[type="date"] {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      min-width: 0 !important;
+      max-width: 100% !important;
+      box-sizing: border-box !important;
+    }
+    input[type="date"]::-webkit-date-and-time-value {
+      text-align: left;
+    }
+
     /* Drag handles lock scroll so drag-and-drop works smoothly on mobile */
     .drag-handle, .overview-drag-handle {
       touch-action: none;
@@ -129,7 +142,7 @@
 
           <!-- Category and Date Selectors (Equal Heights, No Overflow) -->
           <div class="grid grid-cols-2 gap-2 text-xs w-full min-w-0">
-            <div class="min-w-0">
+            <div class="min-w-0 flex flex-col">
               <div class="flex items-center justify-between mb-1">
                 <label class="block font-semibold text-slate-500">Category</label>
                 <!-- Add Income Category Button (visible only when Income tab active) -->
@@ -145,13 +158,13 @@
               </div>
             </div>
 
-            <div class="min-w-0">
+            <div class="min-w-0 flex flex-col">
               <label class="block font-semibold text-slate-500 mb-1">Date</label>
-              <div class="relative w-full min-w-0">
+              <div class="relative w-full min-w-0 overflow-hidden rounded-xl">
                 <input 
                   type="date" 
                   id="dateInput" 
-                  class="w-full box-border h-10 bg-slate-50 border border-slate-200 rounded-xl px-2.5 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-[11px] max-w-full"
+                  class="w-full box-border h-10 bg-slate-50 border border-slate-200 rounded-xl px-2 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-[11px] max-w-full block"
                 />
               </div>
             </div>
@@ -224,13 +237,13 @@
 
         <!-- Summary KPI Cards -->
         <div class="grid grid-cols-3 gap-2">
-          <div class="bg-emerald-50/70 border border-emerald-100 rounded-2xl p-3 text-center">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Total Income</span>
-            <div id="kpiIncome" class="text-sm font-extrabold text-emerald-700 mt-0.5">$0.00</div>
-          </div>
           <div class="bg-rose-50/70 border border-rose-100 rounded-2xl p-3 text-center">
             <span class="text-[10px] font-bold uppercase tracking-wider text-rose-600">Total Spent</span>
             <div id="kpiSpent" class="text-sm font-extrabold text-rose-700 mt-0.5">$0.00</div>
+          </div>
+          <div class="bg-emerald-50/70 border border-emerald-100 rounded-2xl p-3 text-center">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-emerald-600">Total Income</span>
+            <div id="kpiIncome" class="text-sm font-extrabold text-emerald-700 mt-0.5">$0.00</div>
           </div>
           <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-3 text-center">
             <span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Net Balance</span>
@@ -582,17 +595,163 @@
       <div class="space-y-2 pt-2 border-t border-slate-100">
         <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Google Sheets Sync</label>
         <p class="text-[11px] text-slate-500 leading-relaxed">
-          Paste your Google Apps Script Web App URL to sync entries between your phone and laptop in real time.
+          Connect your Google Sheets so each year has its own dedicated spreadsheet containing only that year's 12 monthly tabs, dashboard, and transactions.
         </p>
 
+        <!-- Master / Default Sheet URL -->
         <div>
+          <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Default / Active Sync URL</label>
           <input type="text" id="sheetsUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
         </div>
+
+        <!-- Yearly Sheet Routing Manager Accordion -->
+        <div class="border border-slate-200 rounded-2xl p-2.5 bg-slate-50/70 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <i class="ph-bold ph-calendar-plus text-indigo-600"></i>
+              <span>Yearly Sheet Routing</span>
+            </span>
+            <span class="text-[10px] text-indigo-600 font-semibold bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100">1 Sheet Per Year</span>
+          </div>
+          <p class="text-[10px] text-slate-400 leading-tight">
+            Transactions will automatically save to that year's specific spreadsheet based on the date of the purchase or income.
+          </p>
+          <div id="yearlySheetsList" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+            <!-- Dynamically populated year input slots -->
+          </div>
+          <div class="flex items-center gap-1.5 pt-1">
+            <input type="number" id="newYearRoutingInput" placeholder="e.g. 2027" class="w-20 bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-bold text-slate-700">
+            <button type="button" id="addNewYearRoutingBtn" class="flex-1 py-1 text-[11px] font-bold text-indigo-600 bg-white hover:bg-indigo-50 border border-indigo-200 rounded-lg transition">
+              + Add Year Sheet Slot
+            </button>
+          </div>
+        </div>
+
+        <!-- Automated Setup Instructions & Script Modal Trigger -->
+        <button type="button" id="openSheetsSetupGuideBtn" class="w-full py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs rounded-xl border border-indigo-200 transition flex items-center justify-center gap-1.5">
+          <i class="ph-bold ph-file-code text-sm"></i>
+          <span>View Automated Spreadsheet Code</span>
+        </button>
 
         <button id="saveSettingsBtn" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition">
           Save Settings
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Google Sheets Script & Setup Modal -->
+  <div id="sheetsSetupModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl border border-slate-100 space-y-3 max-h-[88vh] flex flex-col">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold">
+            <i class="ph-bold ph-table text-base"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Dedicated Year Sheet Setup</h3>
+            <p class="text-[11px] text-slate-400">1 Sheet per Year generator script</p>
+          </div>
+        </div>
+        <button id="closeSheetsSetupModalBtn" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+          <i class="ph ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <div class="text-xs text-slate-600 space-y-2 overflow-y-auto flex-1 pr-1">
+        <p class="text-[11px] text-slate-500 leading-relaxed">
+          Whenever you want a new Google Sheet for a specific year (e.g. <strong>2026</strong>, <strong>2027</strong>), follow these 3 quick steps:
+        </p>
+        <ol class="list-decimal list-inside space-y-1 text-[11px] text-slate-600 pl-1 font-medium">
+          <li>Create a blank Google Sheet (e.g. named <em>"Pocket Budget 2026"</em>).</li>
+          <li>Click <strong>Extensions &gt; Apps Script</strong> and paste the code below.</li>
+          <li>Select <strong>buildYearSpreadsheet</strong> and click <strong>Run</strong>!</li>
+        </ol>
+
+        <div class="relative">
+          <button id="copyScriptCodeBtn" type="button" class="absolute right-2 top-2 px-2 py-1 bg-white/90 hover:bg-white text-indigo-600 font-bold text-[10px] rounded-lg shadow-sm border border-slate-200 transition flex items-center gap-1">
+            <i class="ph-bold ph-copy"></i>
+            <span>Copy Code</span>
+          </button>
+          <pre id="appsScriptCodeBlock" class="p-3 bg-slate-900 text-slate-200 text-[10px] rounded-xl font-mono overflow-x-auto max-h-48 leading-relaxed selection:bg-indigo-500">
+// --- POCKET BUDGET YEARLY GOOGLE SHEET SCRIPT ---
+// Run "buildYearSpreadsheet" once to generate that year's tabs!
+const TARGET_YEAR = 2026; // Change to 2027 for next year
+
+function buildYearSpreadsheet() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  
+  // 1. Transactions Tab
+  let txSheet = ss.getSheetByName("Transactions") || ss.insertSheet("Transactions");
+  if (txSheet.getLastRow() === 0) {
+    txSheet.appendRow(["Date", "Amount", "Category / Purpose", "Payment Method", "Type", "Timestamp"]);
+    txSheet.getRange("A1:F1").setFontWeight("bold").setBackground("#4f46e5").setFontColor("#ffffff");
+  }
+
+  // 2. Dashboard Tab for TARGET_YEAR
+  let dash = ss.getSheetByName("Dashboard") || ss.insertSheet("Dashboard", 0);
+  dash.clear();
+  dash.getRange("A1").setValue("POCKET BUDGET - " + TARGET_YEAR + " ANNUAL DASHBOARD").setFontWeight("bold").setFontSize(14).setFontColor("#4f46e5");
+  dash.getRange("A3:D3").setValues([["Month", "Total Income ($)", "Total Spent ($)", "Net ($)"]]).setFontWeight("bold").setBackground("#f1f5f9");
+  
+  for (let i = 0; i < 12; i++) {
+    const row = 4 + i;
+    const mNum = String(i + 1).padStart(2, '0');
+    dash.getRange(row, 1).setValue(months[i]);
+    dash.getRange(row, 2).setFormula(`=SUMIFS(Transactions!B:B, Transactions!E:E, "income", Transactions!A:A, ">="&"${TARGET_YEAR}-${mNum}-01", Transactions!A:A, "<="&"${TARGET_YEAR}-${mNum}-31")`);
+    dash.getRange(row, 3).setFormula(`=SUMIFS(Transactions!B:B, Transactions!E:E, "expense", Transactions!A:A, ">="&"${TARGET_YEAR}-${mNum}-01", Transactions!A:A, "<="&"${TARGET_YEAR}-${mNum}-31")`);
+    dash.getRange(row, 4).setFormula(`=B${row}-C${row}`);
+  }
+
+  // 3. Create 12 Monthly Tabs for this year only
+  months.forEach((m, idx) => {
+    let mSheet = ss.getSheetByName(m) || ss.insertSheet(m);
+    if (mSheet.getLastRow() === 0) {
+      mSheet.getRange("A1").setValue(m + " " + TARGET_YEAR + " Budget Ledger").setFontWeight("bold").setFontColor("#1e293b");
+      mSheet.getRange("A3:E3").setValues([["Category", "Subcategory", "Budget ($)", "Actual Spent ($)", "Remaining ($)"]]).setFontWeight("bold").setBackground("#f8fafc");
+    }
+  });
+
+  SpreadsheetApp.flush();
+}
+
+function doPost(e) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    let txSheet = ss.getSheetByName("Transactions") || ss.insertSheet("Transactions");
+    const data = JSON.parse(e.postData.contents);
+    txSheet.appendRow([data.date, data.amount, data.purpose, data.how, data.type, new Date()]);
+    return ContentService.createTextOutput(JSON.stringify({ status: "success" })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: "error", message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function doGet(e) {
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName("Transactions");
+    if (!sheet) return ContentService.createTextOutput(JSON.stringify({ transactions: [] })).setMimeType(ContentService.MimeType.JSON);
+    const rows = sheet.getDataRange().getValues();
+    const transactions = [];
+    for (let i = 1; i < rows.length; i++) {
+      const r = rows[i];
+      if (!r[0] || !r[1]) continue;
+      let dt = r[0] instanceof Date ? Utilities.formatDate(r[0], Session.getScriptTimeZone(), "yyyy-MM-dd") : String(r[0]).split('T')[0];
+      transactions.push({ id: "sheet_" + i, date: dt, amount: parseFloat(r[1]) || 0, category: String(r[2] || "Other"), paymentMethod: String(r[3] || "Debit"), type: String(r[4] || "expense").toLowerCase() });
+    }
+    return ContentService.createTextOutput(JSON.stringify({ transactions: transactions })).setMimeType(ContentService.MimeType.JSON);
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ error: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}</pre>
+        </div>
+      </div>
+
+      <button id="doneSheetsSetupBtn" class="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition">
+        Done
+      </button>
     </div>
   </div>
 
@@ -791,6 +950,18 @@
     let monthlyBudgetLedger = JSON.parse(localStorage.getItem('budget_ledger_by_month')) || {};
     let transactions = JSON.parse(localStorage.getItem('budget_transactions')) || [];
     let scriptUrl = localStorage.getItem('budget_sheets_url') || '';
+    
+    // Dedicated Year-by-Year Google Sheets Routing Table (e.g. { "2026": "url...", "2027": "url..." })
+    let yearlySheetsUrls = JSON.parse(localStorage.getItem('budget_yearly_sheets_urls')) || {};
+
+    // Helper: Resolves the proper Google Sheets Web App URL for a given year
+    function getSheetUrlForYear(yearNum) {
+      const yr = String(yearNum);
+      if (yearlySheetsUrls[yr] && yearlySheetsUrls[yr].trim()) {
+        return yearlySheetsUrls[yr].trim();
+      }
+      return scriptUrl; // Fallback to general master URL
+    }
 
     // DOM Elements
     const dailyLogScreen = document.getElementById('dailyLogScreen');
@@ -887,6 +1058,15 @@
     const closeSettingsModalBtn = document.getElementById('closeSettingsModalBtn');
     const saveSettingsBtn = document.getElementById('saveSettingsBtn');
     const sheetsUrlInput = document.getElementById('sheetsUrlInput');
+    const yearlySheetsList = document.getElementById('yearlySheetsList');
+    const newYearRoutingInput = document.getElementById('newYearRoutingInput');
+    const addNewYearRoutingBtn = document.getElementById('addNewYearRoutingBtn');
+    const openSheetsSetupGuideBtn = document.getElementById('openSheetsSetupGuideBtn');
+    const sheetsSetupModal = document.getElementById('sheetsSetupModal');
+    const closeSheetsSetupModalBtn = document.getElementById('closeSheetsSetupModalBtn');
+    const doneSheetsSetupBtn = document.getElementById('doneSheetsSetupBtn');
+    const copyScriptCodeBtn = document.getElementById('copyScriptCodeBtn');
+    const appsScriptCodeBlock = document.getElementById('appsScriptCodeBlock');
     const settingsDownloadExtBtn = document.getElementById('settingsDownloadExtBtn');
     const settingsPhoneInstallBtn = document.getElementById('settingsPhoneInstallBtn');
 
@@ -1553,11 +1733,14 @@
       renderRecentTransactions();
       showToast(`Logged ${currentType === 'expense' ? 'Expense' : 'Income'}: $${amountVal.toFixed(2)}`);
 
-      // Cloud Push if Google Sheet URL configured
-      if (scriptUrl) {
-        syncStatusNotice.textContent = "Syncing with Google Sheets...";
+      // Cloud Push: Dynamic Routing to that year's specific Google Sheet
+      const txYear = new Date((newTx.date || getTodayLocalDateString()) + 'T00:00:00').getFullYear();
+      const targetScriptUrl = getSheetUrlForYear(txYear);
+
+      if (targetScriptUrl) {
+        syncStatusNotice.textContent = `Syncing with ${txYear} Google Sheet...`;
         try {
-          await fetch(scriptUrl, {
+          await fetch(targetScriptUrl, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
@@ -1569,7 +1752,7 @@
               type: newTx.type
             })
           });
-          syncStatusNotice.textContent = "✓ Saved to Google Sheet";
+          syncStatusNotice.textContent = `✓ Saved to ${txYear} Google Sheet`;
           setTimeout(() => { syncStatusNotice.textContent = ""; }, 3000);
         } catch (err) {
           syncStatusNotice.textContent = "Saved locally (offline)";
@@ -2311,22 +2494,29 @@
 
     if (syncNowBtn) {
       syncNowBtn.addEventListener('click', async () => {
-        if (!scriptUrl) {
-          showToast("Configure Google Sheets URL first");
+        const activeUrl = getSheetUrlForYear(selectedYear);
+        if (!activeUrl) {
+          showToast(`Configure Google Sheet URL for ${selectedYear} first`);
           settingsModal.classList.remove('hidden');
           return;
         }
         syncNowBtn.querySelector('i').classList.add('animate-spin');
-        showToast("Syncing with Google Sheets...");
+        showToast(`Syncing ${selectedYear} Google Sheet...`);
         try {
-          const res = await fetch(scriptUrl);
+          const res = await fetch(activeUrl);
           const data = await res.json();
           if (data && data.transactions) {
-            transactions = data.transactions;
+            // Keep transactions from other years, merge/replace this year's data
+            const otherYears = transactions.filter(t => {
+              if (!t.date) return false;
+              const d = new Date(t.date + 'T00:00:00');
+              return d.getFullYear() !== selectedYear;
+            });
+            transactions = [...data.transactions, ...otherYears];
             localStorage.setItem('budget_transactions', JSON.stringify(transactions));
             renderRecentTransactions();
             if (currentTab === 'overview') renderOverview();
-            showToast("✓ Cloud Sync Complete");
+            showToast(`✓ ${selectedYear} Cloud Sync Complete`);
           }
         } catch (err) {
           showToast("Sync completed locally");
@@ -2753,8 +2943,57 @@
   }
 
   // --- Settings Modal & Sync Logic ---
+    function renderYearlySheetsList() {
+      if (!yearlySheetsList) return;
+      yearlySheetsList.innerHTML = '';
+
+      // Ensure current year is in list
+      if (!yearlySheetsUrls.hasOwnProperty(currentYear)) {
+        yearlySheetsUrls[currentYear] = yearlySheetsUrls[currentYear] || '';
+      }
+
+      const years = Object.keys(yearlySheetsUrls).sort();
+      years.forEach(yr => {
+        const row = document.createElement('div');
+        row.className = "flex items-center gap-1.5 bg-white p-1.5 rounded-xl border border-slate-200/80 text-xs";
+        row.innerHTML = `
+          <span class="font-bold text-slate-700 w-12 pl-1">${yr}:</span>
+          <input type="text" class="yearly-url-input flex-1 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[11px] font-medium text-slate-800 focus:outline-none focus:ring-1 focus:ring-indigo-500" data-year="${yr}" placeholder="https://script.google.com/macros/s/.../exec" value="${yearlySheetsUrls[yr] || ''}">
+          <button type="button" class="delete-year-url-btn text-slate-300 hover:text-rose-500 p-1" data-year="${yr}" title="Remove this year routing">
+            <i class="ph ph-trash text-sm"></i>
+          </button>
+        `;
+
+        row.querySelector('.yearly-url-input').addEventListener('input', (e) => {
+          yearlySheetsUrls[yr] = e.target.value.trim();
+        });
+
+        row.querySelector('.delete-year-url-btn').addEventListener('click', () => {
+          delete yearlySheetsUrls[yr];
+          localStorage.setItem('budget_yearly_sheets_urls', JSON.stringify(yearlySheetsUrls));
+          renderYearlySheetsList();
+        });
+
+        yearlySheetsList.appendChild(row);
+      });
+    }
+
+    if (addNewYearRoutingBtn) {
+      addNewYearRoutingBtn.addEventListener('click', () => {
+        const val = parseInt(newYearRoutingInput.value, 10);
+        if (isNaN(val) || val < 2000 || val > 2100) {
+          showToast("Enter a valid 4-digit year");
+          return;
+        }
+        yearlySheetsUrls[val] = '';
+        newYearRoutingInput.value = '';
+        renderYearlySheetsList();
+      });
+    }
+
     openSettingsModalBtn.addEventListener('click', () => {
       sheetsUrlInput.value = scriptUrl;
+      renderYearlySheetsList();
       settingsModal.classList.remove('hidden');
     });
 
@@ -2763,9 +3002,39 @@
     saveSettingsBtn.addEventListener('click', () => {
       scriptUrl = sheetsUrlInput.value.trim();
       localStorage.setItem('budget_sheets_url', scriptUrl);
+      localStorage.setItem('budget_yearly_sheets_urls', JSON.stringify(yearlySheetsUrls));
       settingsModal.classList.add('hidden');
-      showToast("Settings saved");
+      showToast("Settings & Yearly Routes saved");
     });
+
+    if (openSheetsSetupGuideBtn) {
+      openSheetsSetupGuideBtn.addEventListener('click', () => {
+        sheetsSetupModal.classList.remove('hidden');
+      });
+    }
+
+    if (closeSheetsSetupModalBtn) {
+      closeSheetsSetupModalBtn.addEventListener('click', () => sheetsSetupModal.classList.add('hidden'));
+    }
+    if (doneSheetsSetupBtn) {
+      doneSheetsSetupBtn.addEventListener('click', () => sheetsSetupModal.classList.add('hidden'));
+    }
+
+    if (copyScriptCodeBtn) {
+      copyScriptCodeBtn.addEventListener('click', () => {
+        const codeText = appsScriptCodeBlock.textContent;
+        const tempTextarea = document.createElement('textarea');
+        tempTextarea.value = codeText;
+        document.body.appendChild(tempTextarea);
+        tempTextarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(tempTextarea);
+        copyScriptCodeBtn.innerHTML = `<i class="ph-bold ph-check text-emerald-600"></i><span class="text-emerald-600">Copied!</span>`;
+        setTimeout(() => {
+          copyScriptCodeBtn.innerHTML = `<i class="ph-bold ph-copy"></i><span>Copy Code</span>`;
+        }, 2000);
+      });
+    }
 
     closeMobileInstallBtn.addEventListener('click', () => mobileInstallModal.classList.add('hidden'));
     gotItMobileBtn.addEventListener('click', () => mobileInstallModal.classList.add('hidden'));
