@@ -128,8 +128,8 @@
           </div>
 
           <!-- Category and Date Selectors (Equal Heights, No Overflow) -->
-          <div class="grid grid-cols-2 gap-2 text-xs">
-            <div>
+          <div class="grid grid-cols-2 gap-2 text-xs w-full min-w-0">
+            <div class="min-w-0">
               <div class="flex items-center justify-between mb-1">
                 <label class="block font-semibold text-slate-500">Category</label>
                 <!-- Add Income Category Button (visible only when Income tab active) -->
@@ -137,21 +137,23 @@
                   <i class="ph-bold ph-plus"></i> New
                 </button>
               </div>
-              <div class="relative">
-                <select id="categorySelect" class="w-full h-10 bg-slate-50 border border-slate-200 rounded-xl pl-2.5 pr-7 font-medium text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-[11px] truncate">
+              <div class="relative w-full min-w-0">
+                <select id="categorySelect" class="w-full box-border h-10 bg-slate-50 border border-slate-200 rounded-xl pl-2.5 pr-7 font-medium text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-[11px] truncate">
                   <!-- Dynamically populated -->
                 </select>
                 <i class="ph-bold ph-caret-down text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-xs"></i>
               </div>
             </div>
 
-            <div>
+            <div class="min-w-0">
               <label class="block font-semibold text-slate-500 mb-1">Date</label>
-              <input 
-                type="date" 
-                id="dateInput" 
-                class="w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-2.5 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-[11px]"
-              />
+              <div class="relative w-full min-w-0">
+                <input 
+                  type="date" 
+                  id="dateInput" 
+                  class="w-full box-border h-10 bg-slate-50 border border-slate-200 rounded-xl px-2.5 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-[11px] max-w-full"
+                />
+              </div>
             </div>
           </div>
 
@@ -607,6 +609,20 @@
         </button>
       </div>
 
+      <div id="pctListContainer" class="flex-1 overflow-y-auto space-y-2 pr-1 max-h-56"></div>
+
+      <div class="space-y-2 pt-2 border-t border-slate-100">
+        <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-600 select-none">
+          <input type="checkbox" id="saveAsFutureDefaultsCheckbox" class="rounded text-indigo-600 focus:ring-indigo-500 w-3.5 h-3.5" checked>
+          <span>Save as template for future months</span>
+        </label>
+        <button id="savePctRulesBtn" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition">
+          Save Targets
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Manage Payment Methods Modal -->
   <div id="paymentMethodsModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl border border-slate-100 space-y-4 max-h-[85vh] flex flex-col">
@@ -1030,7 +1046,8 @@
             : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
         }`;
         chip.textContent = method;
-        chip.addEventListener('click', () => {
+        chip.addEventListener('click', (e) => {
+          e.preventDefault();
           selectedPayment = method;
           updatePaymentChips();
         });
@@ -1041,12 +1058,19 @@
       const editBtn = document.createElement('button');
       editBtn.type = 'button';
       editBtn.id = 'openPaymentMethodsModalBtn';
-      editBtn.className = "w-8 h-7 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 border border-slate-200/80 transition text-xs shadow-sm";
+      editBtn.className = "w-8 h-7 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 border border-slate-200/80 transition text-xs shadow-sm cursor-pointer select-none";
       editBtn.title = "Edit Payment Methods";
-      editBtn.innerHTML = `<i class="ph-bold ph-pencil-simple text-xs"></i>`;
-      editBtn.addEventListener('click', () => {
+      editBtn.innerHTML = `<i class="ph-bold ph-pencil-simple text-xs pointer-events-none"></i>`;
+      
+      const triggerOpenPaymentModal = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         openPaymentModal(currentType);
-      });
+      };
+      
+      editBtn.addEventListener('click', triggerOpenPaymentModal);
+      editBtn.addEventListener('touchend', triggerOpenPaymentModal);
+      
       paymentMethodsChips.appendChild(editBtn);
     }
 
