@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Pocket Budget</title>
 
   <!-- PWA & Mobile Web App Meta Tags -->
@@ -32,6 +32,20 @@
       -webkit-appearance: none; 
       margin: 0; 
     }
+
+    /* Prevent mobile Safari and Chrome from auto-zooming into inputs */
+    @media screen and (max-width: 768px) {
+      input, select, textarea {
+        font-size: 16px !important;
+      }
+    }
+
+    /* Drag handles lock scroll so drag-and-drop works smoothly on mobile */
+    .drag-handle, .overview-drag-handle {
+      touch-action: none;
+      -webkit-touch-callout: none;
+      user-select: none;
+    }
   </style>
 </head>
 <body class="bg-slate-100 min-h-screen flex items-center justify-center p-0 sm:p-4 text-slate-800 font-sans antialiased selection:bg-indigo-500 selection:text-white">
@@ -40,31 +54,31 @@
   <div class="w-full sm:max-w-md bg-white sm:rounded-3xl shadow-2xl border border-slate-200/80 flex flex-col h-screen sm:h-[680px] overflow-hidden relative">
 
     <!-- Top Header -->
-    <header class="px-5 py-3.5 bg-white border-b border-slate-100 flex items-center justify-between z-10">
-      <div>
-        <h1 id="headerTitle" class="text-base font-bold tracking-tight text-slate-900 leading-tight">Daily Log</h1>
-        <p id="currentSubTitle" class="text-[11px] font-semibold text-indigo-600">Budget 2026 • Real-time Sync</p>
+    <header class="px-4 py-3 bg-white border-b border-slate-100 flex items-center justify-between z-10 gap-2">
+      <!-- Pocket Budget Custom Logo Lockup: POCK over BUDG with shared tall ET -->
+      <div class="flex items-center gap-2 min-w-0">
+        <div class="flex items-center select-none cursor-default shrink-0">
+          <svg viewBox="0 0 106 38" class="h-9 w-auto overflow-visible" aria-label="Pocket Budget Logo">
+            <!-- POCK top line: cap-height starts at y=4, baseline at y=17.5 (height ~14.5px) -->
+            <text x="0" y="17.5" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="16.5" fill="#1e293b" textLength="58" lengthAdjust="spacingAndGlyphs">POCK</text>
+            <!-- BUDG bottom line: tight gap, baseline at y=35 (cap at y=21.5, height ~14.5px) -->
+            <text x="0" y="35" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="16.5" fill="#1e293b" textLength="58" lengthAdjust="spacingAndGlyphs">BUDG</text>
+            <!-- Combined ET spanning full height: top cap-line at y=4, baseline at y=35 (exact same span as POCK+gap+BUDG) -->
+            <text x="61" y="35" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="41" letter-spacing="-1.5" fill="#4f46e5">ET</text>
+          </svg>
+        </div>
+        <div class="h-6 w-px bg-slate-200"></div>
+        <div class="min-w-0">
+          <h1 id="headerTitle" class="text-xs font-bold text-slate-800 truncate">Daily Log</h1>
+          <p id="currentSubTitle" class="text-[10px] font-semibold text-indigo-600 truncate">2026</p>
+        </div>
       </div>
 
       <!-- Header Action Controls -->
-      <div class="flex items-center gap-1.5">
-        <!-- Dynamic Period Dropdown for Overview -->
-        <div id="periodSelectorContainer" class="hidden relative">
-          <select id="periodSelect" class="bg-indigo-50/80 text-indigo-700 text-xs font-semibold px-2.5 py-1.5 pr-6 rounded-xl border border-indigo-200/70 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer">
-            <!-- Dynamically populated based on Year/Month -->
-          </select>
-          <i class="ph-bold ph-caret-down text-indigo-500 text-[10px] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none"></i>
-        </div>
-
-        <!-- Download Extension Button -->
-        <button id="downloadExtBtn" title="Download Chrome Extension (.zip)" class="flex items-center gap-1 text-[11px] font-bold text-slate-600 hover:text-indigo-600 bg-slate-100 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-200 px-2.5 py-1.5 rounded-xl transition">
-          <i class="ph-bold ph-download-simple text-sm"></i>
-          <span>Get Ext</span>
-        </button>
-
-        <!-- Install Phone App Modal Trigger -->
-        <button id="openMobileInstallBtn" title="Install on Phone" class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 transition">
-          <i class="ph ph-device-mobile text-base"></i>
+      <div class="flex items-center gap-1.5 shrink-0">
+        <!-- Sync Button -->
+        <button id="syncNowBtn" title="Sync with Google Sheets" class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 transition">
+          <i class="ph-bold ph-arrows-clockwise text-sm"></i>
         </button>
 
         <!-- Manage Categories Modal Trigger -->
@@ -72,8 +86,8 @@
           <i class="ph ph-tag text-base"></i>
         </button>
 
-        <!-- Cloud Sync Settings Trigger -->
-        <button id="openSettingsModalBtn" title="Google Sheets Sync" class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 transition">
+        <!-- Cloud Sync & App Settings Trigger -->
+        <button id="openSettingsModalBtn" title="Settings" class="w-8 h-8 flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 border border-slate-200 transition">
           <i class="ph ph-gear text-base"></i>
         </button>
       </div>
@@ -98,32 +112,33 @@
             </button>
           </div>
 
-          <!-- Currency Amount Input Display -->
-          <div class="bg-slate-50/80 rounded-2xl p-3.5 border border-slate-200/80 focus-within:border-indigo-500 focus-within:ring-2 focus-within:ring-indigo-500/20 transition">
-            <span class="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Amount</span>
-            <div class="flex items-center gap-1.5 mt-0.5">
-              <span class="text-2xl font-bold text-slate-400">$</span>
+          <!-- Amount Input -->
+          <div>
+            <label class="block font-semibold text-slate-500 text-xs mb-1">Amount ($)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
               <input 
                 type="number" 
                 id="amountInput" 
-                placeholder="0.00" 
                 step="0.01" 
-                class="w-full bg-transparent text-2xl font-extrabold text-slate-900 focus:outline-none placeholder:text-slate-300"
+                placeholder="0.00" 
+                class="w-full h-11 bg-slate-50 border border-slate-200 rounded-xl pl-8 pr-3 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-base"
               />
             </div>
           </div>
 
-          <!-- Category and Date Selectors -->
+          <!-- Category and Date Selectors (Equal Heights, No Overflow) -->
           <div class="grid grid-cols-2 gap-2 text-xs">
             <div>
               <div class="flex items-center justify-between mb-1">
-                <label class="font-semibold text-slate-500">Category</label>
-                <button type="button" id="quickAddCatBtn" class="text-[10px] text-indigo-600 hover:text-indigo-800 font-semibold flex items-center gap-0.5">
+                <label class="block font-semibold text-slate-500">Category</label>
+                <!-- Add Income Category Button (visible only when Income tab active) -->
+                <button type="button" id="dailyAddIncomeCatBtn" class="hidden text-[10px] font-bold text-emerald-600 hover:text-emerald-700 flex items-center gap-0.5">
                   <i class="ph-bold ph-plus"></i> New
                 </button>
               </div>
               <div class="relative">
-                <select id="categorySelect" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 font-medium text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                <select id="categorySelect" class="w-full h-10 bg-slate-50 border border-slate-200 rounded-xl pl-2.5 pr-7 font-medium text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-[11px] truncate">
                   <!-- Dynamically populated -->
                 </select>
                 <i class="ph-bold ph-caret-down text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-xs"></i>
@@ -135,8 +150,19 @@
               <input 
                 type="date" 
                 id="dateInput" 
-                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs"
+                class="w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-2.5 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-[11px]"
               />
+            </div>
+          </div>
+
+          <!-- Subcategory Optional Selector -->
+          <div id="subcatRow" class="hidden text-xs">
+            <label class="block font-semibold text-slate-500 mb-1">Subcategory (Optional)</label>
+            <div class="relative">
+              <select id="subcategorySelect" class="w-full h-10 bg-slate-50 border border-slate-200 rounded-xl px-2.5 font-medium text-slate-800 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-xs">
+                <!-- Dynamically populated -->
+              </select>
+              <i class="ph-bold ph-caret-down text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-xs"></i>
             </div>
           </div>
 
@@ -161,11 +187,10 @@
         <!-- Recent Activity Section -->
         <div class="space-y-2">
           <div class="flex items-center justify-between px-1">
-            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Recent Activity</h2>
+            <h2 id="recentActivityHeading" class="text-xs font-bold uppercase tracking-wider text-slate-400">Recent Expenses</h2>
             <span id="txCountBadge" class="text-[10px] font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">0 entries</span>
           </div>
 
-          <!-- Empty State or Transaction Cards -->
           <div id="recentTxContainer" class="space-y-1.5">
             <!-- Dynamically populated -->
           </div>
@@ -173,8 +198,22 @@
       </section>
 
       <!-- ================= SCREEN 2: OVERVIEW ================= -->
-      <section id="overviewScreen" class="hidden space-y-4">
+      <section id="overviewScreen" class="hidden space-y-4 pb-14">
         
+        <!-- Period Selector Subheader (relocated beneath top header for clean spacing) -->
+        <div class="flex items-center justify-between bg-white p-2 rounded-2xl border border-slate-200/80 shadow-sm gap-2">
+          <div class="flex items-center gap-1.5 text-xs font-bold text-slate-600 pl-1">
+            <i class="ph-bold ph-calendar text-indigo-600 text-sm"></i>
+            <span>Period:</span>
+          </div>
+          <div class="relative flex-1 max-w-[210px]">
+            <select id="periodSelect" class="w-full bg-indigo-50/90 text-indigo-700 text-xs font-bold px-3 py-1.5 pr-7 rounded-xl border border-indigo-200/70 appearance-none focus:outline-none focus:ring-2 focus:ring-indigo-500/20 cursor-pointer truncate">
+              <!-- Dynamically populated with Month and Year -->
+            </select>
+            <i class="ph-bold ph-caret-down text-indigo-500 text-xs absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+          </div>
+        </div>
+
         <!-- View Toggle (Month / Year) -->
         <div class="flex p-1 bg-slate-100 rounded-xl">
           <button class="overview-timeframe-btn flex-1 py-1.5 text-xs font-bold rounded-lg transition bg-white text-indigo-600 shadow-sm" data-view="month">Month</button>
@@ -197,18 +236,22 @@
           </div>
         </div>
 
-        <!-- Category Budgets (Hidden in Yearly view per specifications) -->
-        <div id="categoryBudgetsSection" class="space-y-2">
+        <!-- Category Budgets (Month View) -->
+        <div id="categoryBudgetsSection" class="space-y-3">
           <div class="flex items-center justify-between px-1">
             <h2 class="text-xs font-bold uppercase tracking-wider text-slate-400">Budget Progress</h2>
-            <div class="flex items-center gap-2">
-              <button id="overviewAddCatBtn" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-0.5 bg-indigo-50/70 hover:bg-indigo-100/70 px-2 py-0.5 rounded-lg border border-indigo-200/60 transition">
+            <div class="flex items-center gap-1.5">
+              <button id="overviewAddExpenseCatBtn" class="text-[11px] font-bold text-rose-600 hover:text-rose-800 flex items-center gap-1 bg-rose-50 hover:bg-rose-100 px-2 py-1 rounded-lg border border-rose-200/60 transition shadow-sm">
                 <i class="ph-bold ph-plus"></i>
-                <span>Category</span>
+                <span>Expense</span>
               </button>
-              <button id="openPctModalBtn" class="text-xs font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+              <button id="overviewAddIncomeCatBtn" class="text-[11px] font-bold text-emerald-600 hover:text-emerald-800 flex items-center gap-1 bg-emerald-50 hover:bg-emerald-100 px-2 py-1 rounded-lg border border-emerald-200/60 transition shadow-sm">
+                <i class="ph-bold ph-plus"></i>
+                <span>Income</span>
+              </button>
+              <button id="openPctModalBtn" class="text-[11px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 bg-white hover:bg-slate-50 px-2 py-1 rounded-lg border border-slate-200 transition">
                 <i class="ph-bold ph-sliders"></i>
-                <span>Edit Budgets & %</span>
+                <span>Budgets</span>
               </button>
             </div>
           </div>
@@ -218,18 +261,102 @@
           </div>
         </div>
 
-        <!-- Minimal Yearly Notice (Only visible when Year is active) -->
-        <div id="yearlyNotice" class="hidden text-center py-8 px-4 bg-slate-50 rounded-2xl border border-slate-200/60 text-slate-400 space-y-1">
-          <i class="ph ph-chart-line-up text-3xl text-indigo-500 mb-1"></i>
-          <p class="text-xs font-semibold text-slate-700">Yearly Overview</p>
-          <p class="text-[11px]">Displaying overall Total Expenses and Total Income for the selected year.</p>
+        <!-- Yearly Overview Chart (Year View) -->
+        <div id="yearlyNotice" class="hidden space-y-3">
+          <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Monthly Expenses vs Income</h3>
+              <div class="flex items-center gap-3 text-[10px] font-bold">
+                <span class="flex items-center gap-1 text-rose-500"><span class="w-2.5 h-2.5 rounded bg-rose-400 inline-block"></span> Expenses</span>
+                <span class="flex items-center gap-1 text-emerald-600"><span class="w-3 h-0.5 bg-emerald-500 inline-block"></span> Income</span>
+              </div>
+            </div>
+            <div id="yearlyChartContainer" class="w-full h-48 relative">
+              <!-- SVG Combo Chart rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Payment Methods Annual Breakdown (Sorted Highest to Lowest) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            <!-- Expense Payment Breakdown -->
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                  <i class="ph-bold ph-credit-card text-rose-500"></i>
+                  <span>Expense Methods</span>
+                </h4>
+                <span id="yearlyExpMethodTotal" class="text-[11px] font-bold text-rose-600">$0.00</span>
+              </div>
+              <div id="yearlyExpenseMethodsList" class="space-y-1.5 pt-1">
+                <!-- Dynamically populated, sorted highest to lowest -->
+              </div>
+            </div>
+
+            <!-- Income Payment Breakdown -->
+            <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm space-y-2">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                  <i class="ph-bold ph-bank text-emerald-500"></i>
+                  <span>Income Methods</span>
+                </h4>
+                <span id="yearlyIncMethodTotal" class="text-[11px] font-bold text-emerald-600">$0.00</span>
+              </div>
+              <div id="yearlyIncomeMethodsList" class="space-y-1.5 pt-1">
+                <!-- Dynamically populated, sorted highest to lowest -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Annual Category & Subcategory Breakdown -->
+          <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                <i class="ph-bold ph-receipt text-slate-500"></i>
+                <span>Annual Expense Breakdown</span>
+              </h4>
+              <span id="yearlyTotalExpenseLabel" class="text-xs font-extrabold text-rose-600">$0.00</span>
+            </div>
+            <div id="yearlyCategoryBreakdownList" class="space-y-2">
+              <!-- Dynamically populated with Categories & Subcategories -->
+            </div>
+          </div>
+
+          <!-- Annual Income Streams Breakdown -->
+          <div class="bg-white p-3.5 rounded-2xl border border-slate-200/80 shadow-sm space-y-3">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                <i class="ph-bold ph-money text-emerald-600"></i>
+                <span>Annual Income Streams</span>
+              </h4>
+              <span id="yearlyTotalIncomeLabel" class="text-xs font-extrabold text-emerald-600">$0.00</span>
+            </div>
+            <div id="yearlyIncomeBreakdownList" class="space-y-1.5">
+              <!-- Dynamically populated with Income Streams -->
+            </div>
+          </div>
         </div>
       </section>
 
     </main>
 
+    <!-- Frozen Bottom Net Pane (Month & Year) -->
+    <div id="frozenNetPane" class="hidden absolute bottom-14 left-0 right-0 z-20 px-4 py-2 bg-white/95 backdrop-blur-md border-t border-slate-200/80 shadow-lg flex items-center justify-between transition-all duration-300">
+      <div class="flex items-center gap-2">
+        <div id="frozenNetIcon" class="w-7 h-7 rounded-lg flex items-center justify-center font-black text-xs bg-emerald-100 text-emerald-700">
+          <i class="ph-bold ph-trend-up"></i>
+        </div>
+        <div>
+          <span id="frozenNetLabel" class="text-[11px] uppercase tracking-wider font-extrabold text-slate-500">Net Gain</span>
+          <p id="frozenNetPeriod" class="text-[10px] text-slate-400 font-medium">Selected Month</p>
+        </div>
+      </div>
+      <div id="frozenNetValue" class="text-base font-black text-emerald-600">
+        +$0.00
+      </div>
+    </div>
+
     <!-- Bottom Navigation Bar -->
-    <nav class="h-14 bg-white border-t border-slate-100 px-6 flex items-center justify-around z-10">
+    <nav class="h-14 bg-white border-t border-slate-100 px-6 flex items-center justify-around z-10 shrink-0">
       <button id="navDailyBtn" class="flex-1 flex flex-col items-center justify-center gap-0.5 text-indigo-600 font-bold transition">
         <i class="ph-bold ph-note-pencil text-lg"></i>
         <span class="text-[10px] tracking-wide">Daily Log</span>
@@ -256,14 +383,120 @@
       </div>
       <div>
         <label class="block text-xs font-semibold text-slate-500 mb-1">Category Name</label>
-        <input type="text" id="quickAddCatNameInput" placeholder="e.g., Groceries, Rent, Freelance" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+        <input type="text" id="quickAddCatNameInput" placeholder="e.g., Subscriptions, Groceries, Paycheck" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
       </div>
+
+      <!-- Initial Budget Targets for Expense Categories -->
+      <div id="quickAddBudgetFields" class="space-y-2 pt-1 border-t border-slate-100">
+        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Monthly Budget (Optional)</label>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <label class="text-slate-400 text-[10px] font-medium block mb-0.5">Base Budget ($)</label>
+            <input type="number" id="quickAddBaseBudget" step="0.01" placeholder="0.00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+          </div>
+          <div>
+            <label class="text-slate-400 text-[10px] font-medium block mb-0.5">% of Total Income</label>
+            <input type="number" id="quickAddPctBudget" step="0.5" placeholder="0%" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+          </div>
+        </div>
+      </div>
+
       <div class="flex gap-2 pt-1">
         <button type="button" id="cancelQuickAddBtn" class="flex-1 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
           Cancel
         </button>
         <button type="button" id="confirmQuickAddBtn" class="flex-1 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition">
           Save
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Category Detail & Edit Modal (Drill-Down + Transaction History) -->
+  <div id="categoryDetailModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl border border-slate-100 space-y-4 max-h-[88vh] flex flex-col">
+      <div class="flex items-center justify-between">
+        <div class="min-w-0">
+          <span class="text-[10px] uppercase font-bold text-indigo-600 tracking-wider">Category Details</span>
+          <h3 id="catDetailTitle" class="text-base font-extrabold text-slate-900 truncate">Category</h3>
+        </div>
+        <button id="closeCatDetailModalBtn" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+          <i class="ph ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Budget Target Adjustment Section -->
+      <div class="p-3 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-700">Budget Settings</span>
+          <span id="catDetailMonthLabel" class="text-[10px] font-semibold text-slate-400"></span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <label class="text-slate-500 text-[11px] font-medium block mb-1">Base Budget ($)</label>
+            <input type="number" step="0.01" id="catDetailBaseInp" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 font-bold text-slate-800 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-slate-500 text-[11px] font-medium block mb-1">% of Income</label>
+            <input type="number" step="0.5" id="catDetailPctInp" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 font-bold text-indigo-600 text-xs focus:ring-2 focus:ring-indigo-500/20 focus:outline-none">
+          </div>
+        </div>
+        <button id="catDetailSaveBudgetBtn" class="w-full py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl transition shadow-sm">
+          Save Budget Targets
+        </button>
+      </div>
+
+      <!-- Purchases / Activity List from Daily Log -->
+      <div class="flex-1 overflow-y-auto space-y-2 pr-1 min-h-[140px]">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Purchases in this Category</span>
+          <span id="catDetailTxTotal" class="text-xs font-extrabold text-slate-800">$0.00</span>
+        </div>
+        <div id="catDetailTxList" class="space-y-1.5">
+          <!-- Populated dynamically with purchases for this category -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add / Edit Subcategory Modal with Budget Support -->
+  <div id="subcatModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-2xl w-full max-w-xs p-5 shadow-2xl border border-slate-100 space-y-3">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 id="subcatModalTitle" class="text-sm font-bold text-slate-800">Add Subcategory</h3>
+          <p id="subcatParentNameLabel" class="text-[11px] text-indigo-600 font-semibold truncate max-w-[200px]"></p>
+        </div>
+        <button id="closeSubcatModalBtn" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+          <i class="ph ph-x text-base"></i>
+        </button>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-slate-500 mb-1">Subcategory Name</label>
+        <input type="text" id="newSubcatNameInput" placeholder="e.g., Spotify, Gym Membership, Netflix" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+      </div>
+
+      <!-- Optional Subcategory Budget -->
+      <div class="space-y-2 pt-1 border-t border-slate-100">
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Subcategory Budget Target</label>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <label class="text-slate-400 text-[10px] font-medium block mb-0.5">Base ($)</label>
+            <input type="number" id="subcatBaseBudgetInput" step="0.01" placeholder="0.00" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+          </div>
+          <div>
+            <label class="text-slate-400 text-[10px] font-medium block mb-0.5">% of Income</label>
+            <input type="number" id="subcatPctBudgetInput" step="0.5" placeholder="0%" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/20">
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-1">
+        <button type="button" id="cancelSubcatBtn" class="flex-1 py-2 text-xs font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition">
+          Cancel
+        </button>
+        <button type="button" id="confirmSubcatBtn" class="flex-1 py-2 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition">
+          Save Subcategory
         </button>
       </div>
     </div>
@@ -278,8 +511,8 @@
             <i class="ph ph-tag"></i>
           </div>
           <div>
-            <h3 class="text-sm font-bold text-slate-900">Custom Categories</h3>
-            <p class="text-[11px] text-slate-400">Pin categories to repeat month-to-month</p>
+            <h3 class="text-sm font-bold text-slate-900">Manage Categories</h3>
+            <p class="text-[11px] text-slate-400">Reorder and customize categories</p>
           </div>
         </div>
         <button id="closeCatModalBtn" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100">
@@ -299,71 +532,120 @@
 
       <div id="categoryItemsList" class="flex-1 overflow-y-auto space-y-1.5 pr-1 max-h-56"></div>
 
-      <div class="flex items-center justify-between pt-1">
-        <span class="text-[10px] text-slate-400">⋮⋮ Drag to reorder • 📌 Saved</span>
-        <button id="clearAllCatsBtn" class="text-[11px] text-rose-500 hover:text-rose-700 underline">
+      <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+        <button id="clearAllCatsBtn" class="text-rose-500 hover:text-rose-700 text-[11px] font-semibold transition">
           Clear All
+        </button>
+        <span class="text-[10px] text-slate-400">Drag handles to reorder</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings Modal (Google Sync, Chrome Extension, and Phone Install) -->
+  <div id="settingsModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl border border-slate-100 space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold">
+            <i class="ph ph-gear text-base"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Settings & Tools</h3>
+            <p class="text-[11px] text-slate-400">Sync, install, and extensions</p>
+          </div>
+        </div>
+        <button id="closeSettingsModalBtn" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+          <i class="ph ph-x text-lg"></i>
+        </button>
+      </div>
+
+      <!-- App & Extension Actions -->
+      <div class="space-y-2 pt-1">
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Install & Export</label>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="settingsPhoneInstallBtn" class="flex flex-col items-center justify-center p-3 bg-indigo-50/70 hover:bg-indigo-100/70 border border-indigo-200/60 rounded-2xl transition text-center group">
+            <i class="ph ph-device-mobile text-2xl text-indigo-600 mb-1 group-hover:scale-110 transition"></i>
+            <span class="text-xs font-bold text-indigo-900">Phone App</span>
+            <span class="text-[10px] text-indigo-600">Add to Home Screen</span>
+          </button>
+          <button id="settingsDownloadExtBtn" class="flex flex-col items-center justify-center p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-2xl transition text-center group">
+            <i class="ph ph-download-simple text-2xl text-slate-700 mb-1 group-hover:scale-110 transition"></i>
+            <span class="text-xs font-bold text-slate-800">Get Extension</span>
+            <span class="text-[10px] text-slate-500">Chrome ZIP package</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Google Sheets Sync Configuration -->
+      <div class="space-y-2 pt-2 border-t border-slate-100">
+        <label class="block text-xs font-bold uppercase tracking-wider text-slate-400">Google Sheets Sync</label>
+        <p class="text-[11px] text-slate-500 leading-relaxed">
+          Paste your Google Apps Script Web App URL to sync entries between your phone and laptop in real time.
+        </p>
+
+        <div>
+          <input type="text" id="sheetsUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+        </div>
+
+        <button id="saveSettingsBtn" class="w-full py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition">
+          Save Settings
         </button>
       </div>
     </div>
   </div>
 
-  <!-- Budget Amounts & Income % Rules Modal -->
+  <!-- Budget Targets & Income % Rules Modal -->
   <div id="pctModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl border border-slate-100 space-y-4 max-h-[85vh] flex flex-col">
       <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-sm font-bold text-slate-900">Budget Targets & % Rules</h3>
-          <p id="modalEditingScope" class="text-[11px] text-indigo-600 font-semibold">Editing Monthly Budgets</p>
+          <h3 class="text-sm font-bold text-slate-900">Monthly Budget Targets</h3>
+          <p id="modalEditingScope" class="text-[11px] text-indigo-600 font-semibold"></p>
         </div>
         <button id="closePctModalBtn" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100">
           <i class="ph ph-x text-lg"></i>
         </button>
       </div>
 
-      <p class="text-[11px] text-slate-500 leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
-        Each category calculates its budget as: <br>
-        <span class="font-bold text-slate-700 font-mono">Budget = Base ($) + (Total Income × % Target)</span><br>
-        <span class="text-[10px] text-indigo-600 font-medium">Changes here are saved for this specific month, while recurring 📌 items serve as your baseline for new months.</span>
-      </p>
-
-      <div class="flex items-center gap-2 px-1">
-        <label class="text-[11px] font-semibold text-slate-600 flex items-center gap-1.5 cursor-pointer">
-          <input type="checkbox" id="saveAsFutureDefaultsCheckbox" class="rounded text-indigo-600 focus:ring-indigo-500">
-          <span>Also update ongoing template for future months</span>
-        </label>
-      </div>
-
-      <div id="pctListContainer" class="flex-1 overflow-y-auto space-y-2.5 pr-1 max-h-64"></div>
-
-      <button id="savePctRulesBtn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition">
-        Save Budget Formulas
-      </button>
-    </div>
-  </div>
-
-  <!-- Google Sheets Sync Settings Modal -->
-  <div id="settingsModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl border border-slate-100 space-y-4">
+  <!-- Manage Payment Methods Modal -->
+  <div id="paymentMethodsModal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl w-full max-w-sm p-5 shadow-2xl border border-slate-100 space-y-4 max-h-[85vh] flex flex-col">
       <div class="flex items-center justify-between">
-        <h3 class="text-sm font-bold text-slate-900">Google Sheets Sync</h3>
-        <button id="closeSettingsModalBtn" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold">
+            <i class="ph-bold ph-credit-card text-base"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold text-slate-900">Payment Methods</h3>
+            <p id="paymentModalSubTitle" class="text-[11px] text-slate-400">Edit options for Expenses & Income</p>
+          </div>
+        </div>
+        <button id="closePaymentModalBtn" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100">
           <i class="ph ph-x text-lg"></i>
         </button>
       </div>
 
-      <p class="text-xs text-slate-500 leading-relaxed">
-        Connect your Google Sheet via an Apps Script Web App URL. Whenever you or your wife log an entry, it updates your spreadsheet automatically.
-      </p>
-
-      <div>
-        <label class="block text-xs font-semibold text-slate-500 mb-1">Web App Deployment URL</label>
-        <input type="text" id="sheetsUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+      <!-- Expense vs Income Payment Tab Switcher -->
+      <div class="flex p-1 bg-slate-100 rounded-xl text-xs font-semibold">
+        <button id="payTabExpense" class="flex-1 py-1.5 rounded-lg bg-white text-rose-600 shadow-sm transition">Expense Methods</button>
+        <button id="payTabIncome" class="flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition">Income Methods</button>
       </div>
 
-      <button id="saveSettingsBtn" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition">
-        Save Settings
-      </button>
+      <!-- Add New Payment Method Input -->
+      <div class="flex gap-1.5">
+        <input type="text" id="newPaymentMethodInput" placeholder="New payment method (e.g. Apple Pay, Zelle)..." class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+        <button id="addNewPaymentMethodBtn" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm transition">Add</button>
+      </div>
+
+      <!-- Payment Methods List -->
+      <div id="paymentMethodsList" class="flex-1 overflow-y-auto space-y-1.5 pr-1 max-h-56"></div>
+
+      <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+        <button id="resetPaymentMethodsBtn" class="text-slate-400 hover:text-slate-600 text-[11px] font-semibold transition">
+          Reset Defaults
+        </button>
+        <span class="text-[10px] text-slate-400">Click pencil to edit or trash to delete</span>
+      </div>
     </div>
   </div>
 
@@ -377,7 +659,7 @@
           </div>
           <div>
             <h3 class="text-sm font-bold text-slate-900">Install on Your Phone</h3>
-            <p class="text-[11px] text-slate-400">Add to Home Screen without app store</p>
+            <p class="text-[11px] text-slate-400">Full-screen experience without App Store</p>
           </div>
         </div>
         <button id="closeMobileInstallBtn" class="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100">
@@ -386,7 +668,6 @@
       </div>
 
       <div class="space-y-3 text-xs text-slate-600">
-        <!-- iOS Instructions -->
         <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/70 space-y-1.5">
           <div class="flex items-center gap-1.5 font-bold text-slate-800">
             <i class="ph ph-apple-logo text-base text-slate-900"></i>
@@ -394,13 +675,12 @@
           </div>
           <ol class="list-decimal list-inside space-y-1 text-[11px] text-slate-600 pl-1">
             <li>Open this URL in <strong>Safari</strong>.</li>
-            <li>Tap the <strong>Share</strong> button (box with an arrow pointing up at the bottom).</li>
+            <li>Tap the <strong>Share</strong> button (box with upward arrow).</li>
             <li>Scroll down and tap <strong>"Add to Home Screen"</strong>.</li>
-            <li>Tap <strong>Add</strong>. It will open like a real full-screen app!</li>
+            <li>Tap <strong>Add</strong>. It will open full-screen like a native app!</li>
           </ol>
         </div>
 
-        <!-- Android Instructions -->
         <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200/70 space-y-1.5">
           <div class="flex items-center gap-1.5 font-bold text-slate-800">
             <i class="ph ph-android-logo text-base text-emerald-600"></i>
@@ -408,9 +688,8 @@
           </div>
           <ol class="list-decimal list-inside space-y-1 text-[11px] text-slate-600 pl-1">
             <li>Open this URL in <strong>Chrome</strong>.</li>
-            <li>Tap the <strong>three dots (⋮)</strong> menu in the top right.</li>
+            <li>Tap the <strong>three dots (⋮)</strong> menu in top right.</li>
             <li>Tap <strong>"Install app"</strong> or <strong>"Add to Home screen"</strong>.</li>
-            <li>Confirm, and the icon will appear right on your home screen.</li>
           </ol>
         </div>
       </div>
@@ -451,59 +730,172 @@
       return `${year}-${month}-${day}`;
     }
 
-    // Track whether the user has intentionally modified the date
     let userHasManuallyChangedDate = false;
 
     // --- Constant Definitions ---
-    const EXPENSE_PAYMENTS = ["Debit", "Credit", "Venmo", "Cash"];
-    const INCOME_PAYMENTS = ["Direct Deposit", "Venmo", "Cash", "Check"];
+    const DEFAULT_EXPENSE_PAYMENTS = ["Debit", "Credit", "Venmo", "Cash"];
+    const DEFAULT_INCOME_PAYMENTS = ["Direct Deposit", "Venmo", "Cash", "Check"];
     const MONTH_NAMES = [
       "January", "February", "March", "April", "May", "June",
       "July", "August", "September", "October", "November", "December"
     ];
+    const SHORT_MONTH_NAMES = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     const currentYear = new Date().getFullYear();
 
     // --- State Initialization ---
     let currentTab = 'daily';
-    let currentType = 'expense';
+    let currentType = 'expense'; // 'expense' or 'income'
     let selectedPayment = 'Debit';
     let currentOverviewTimeframe = 'month';
 
     let selectedYear = currentYear;
     let selectedMonth = new Date().getMonth();
 
-    let catManagerType = 'expense';
+    // Section collapse states for Overview
+    let expensesCollapsed = JSON.parse(localStorage.getItem('budget_expenses_collapsed')) || false;
+    let incomeCollapsed = JSON.parse(localStorage.getItem('budget_income_collapsed')) || false;
 
-    // Categories & Budget Rules (Clean state)
+    let catManagerType = 'expense';
+    let paymentManagerType = 'expense';
+    let targetParentForSubcat = '';
+
+    // Payment Methods Storage
+    let expensePayments = JSON.parse(localStorage.getItem('budget_payments_expense')) || [...DEFAULT_EXPENSE_PAYMENTS];
+    let incomePayments = JSON.parse(localStorage.getItem('budget_payments_income')) || [...DEFAULT_INCOME_PAYMENTS];
+
+    // Categories & Budget Rules (Initialized clean with no sample or placeholder entries)
     let expenseCategories = JSON.parse(localStorage.getItem('budget_cats_expense')) || [];
     let incomeCategories = JSON.parse(localStorage.getItem('budget_cats_income')) || [];
+    let subcategories = JSON.parse(localStorage.getItem('budget_subcategories')) || {};
+    let subcategoryRules = JSON.parse(localStorage.getItem('budget_subcat_rules')) || {};
 
-    // Recurring / Month-to-Month Saved Categories Set
     let recurringCategories = JSON.parse(localStorage.getItem('budget_cats_recurring')) || [];
-
-    // Base template rules that persist across future months
     let templateBudgetRules = JSON.parse(localStorage.getItem('budget_rules_monthly')) || {};
-    
-    // Month-specific budgets: { "2026-9": { "Rent": { fixed: 675, percent: 0 }, ... } }
     let monthlyBudgetLedger = JSON.parse(localStorage.getItem('budget_ledger_by_month')) || {};
-    
     let transactions = JSON.parse(localStorage.getItem('budget_transactions')) || [];
     let scriptUrl = localStorage.getItem('budget_sheets_url') || '';
 
-    // Helper: Key for a specific month (e.g. "2026-9" for October 2026, 0-indexed month)
+    // DOM Elements
+    const dailyLogScreen = document.getElementById('dailyLogScreen');
+    const overviewScreen = document.getElementById('overviewScreen');
+    const navDailyBtn = document.getElementById('navDailyBtn');
+    const navOverviewBtn = document.getElementById('navOverviewBtn');
+    const headerTitle = document.getElementById('headerTitle');
+    const currentSubTitle = document.getElementById('currentSubTitle');
+    const periodSelect = document.getElementById('periodSelect');
+    const frozenNetPane = document.getElementById('frozenNetPane');
+    const frozenNetIcon = document.getElementById('frozenNetIcon');
+    const frozenNetLabel = document.getElementById('frozenNetLabel');
+    const frozenNetPeriod = document.getElementById('frozenNetPeriod');
+    const frozenNetValue = document.getElementById('frozenNetValue');
+
+    const typeExpenseBtn = document.getElementById('typeExpenseBtn');
+    const typeIncomeBtn = document.getElementById('typeIncomeBtn');
+    const dailyAddIncomeCatBtn = document.getElementById('dailyAddIncomeCatBtn');
+    const amountInput = document.getElementById('amountInput');
+    const categorySelect = document.getElementById('categorySelect');
+    const dateInput = document.getElementById('dateInput');
+    const paymentMethodsChips = document.getElementById('paymentMethodsChips');
+    const addEntryBtn = document.getElementById('addEntryBtn');
+    const syncStatusNotice = document.getElementById('syncStatusNotice');
+
+    const recentActivityHeading = document.getElementById('recentActivityHeading');
+    const txCountBadge = document.getElementById('txCountBadge');
+    const recentTxContainer = document.getElementById('recentTxContainer');
+
+    const kpiIncome = document.getElementById('kpiIncome');
+    const kpiSpent = document.getElementById('kpiSpent');
+    const kpiNet = document.getElementById('kpiNet');
+    const categoryBudgetsSection = document.getElementById('categoryBudgetsSection');
+    const budgetProgressList = document.getElementById('budgetProgressList');
+    const yearlyNotice = document.getElementById('yearlyNotice');
+
+    const quickAddModal = document.getElementById('quickAddModal');
+    const quickAddModalTitle = document.getElementById('quickAddModalTitle');
+    const quickAddCatNameInput = document.getElementById('quickAddCatNameInput');
+    const quickAddBudgetFields = document.getElementById('quickAddBudgetFields');
+    const quickAddBaseBudget = document.getElementById('quickAddBaseBudget');
+    const quickAddPctBudget = document.getElementById('quickAddPctBudget');
+    const closeQuickAddModal = document.getElementById('closeQuickAddModal');
+    const cancelQuickAddBtn = document.getElementById('cancelQuickAddBtn');
+    const confirmQuickAddBtn = document.getElementById('confirmQuickAddBtn');
+    const overviewAddExpenseCatBtn = document.getElementById('overviewAddExpenseCatBtn');
+    const overviewAddIncomeCatBtn = document.getElementById('overviewAddIncomeCatBtn');
+
+    // Payment Methods Modal Elements
+    const paymentMethodsModal = document.getElementById('paymentMethodsModal');
+    const closePaymentModalBtn = document.getElementById('closePaymentModalBtn');
+    const payTabExpense = document.getElementById('payTabExpense');
+    const payTabIncome = document.getElementById('payTabIncome');
+    const newPaymentMethodInput = document.getElementById('newPaymentMethodInput');
+    const addNewPaymentMethodBtn = document.getElementById('addNewPaymentMethodBtn');
+    const paymentMethodsList = document.getElementById('paymentMethodsList');
+    const resetPaymentMethodsBtn = document.getElementById('resetPaymentMethodsBtn');
+
+    // Category Detail Modal Elements
+    const categoryDetailModal = document.getElementById('categoryDetailModal');
+    const catDetailTitle = document.getElementById('catDetailTitle');
+    const closeCatDetailModalBtn = document.getElementById('closeCatDetailModalBtn');
+    const catDetailMonthLabel = document.getElementById('catDetailMonthLabel');
+    const catDetailBaseInp = document.getElementById('catDetailBaseInp');
+    const catDetailPctInp = document.getElementById('catDetailPctInp');
+    const catDetailSaveBudgetBtn = document.getElementById('catDetailSaveBudgetBtn');
+    const catDetailTxTotal = document.getElementById('catDetailTxTotal');
+    const catDetailTxList = document.getElementById('catDetailTxList');
+    let activeDetailCategory = '';
+
+    const subcatModal = document.getElementById('subcatModal');
+    const subcatModalTitle = document.getElementById('subcatModalTitle');
+    const subcatParentNameLabel = document.getElementById('subcatParentNameLabel');
+    const newSubcatNameInput = document.getElementById('newSubcatNameInput');
+    const subcatBaseBudgetInput = document.getElementById('subcatBaseBudgetInput');
+    const subcatPctBudgetInput = document.getElementById('subcatPctBudgetInput');
+    const closeSubcatModalBtn = document.getElementById('closeSubcatModalBtn');
+    const cancelSubcatBtn = document.getElementById('cancelSubcatBtn');
+    const confirmSubcatBtn = document.getElementById('confirmSubcatBtn');
+    let editingSubcatName = null;
+
+    const categoryModal = document.getElementById('categoryModal');
+    const openCatModalBtn = document.getElementById('openCatModalBtn');
+    const closeCatModalBtn = document.getElementById('closeCatModalBtn');
+    const catTabExpense = document.getElementById('catTabExpense');
+    const catTabIncome = document.getElementById('catTabIncome');
+    const newCatInput = document.getElementById('newCatInput');
+    const addNewCatBtn = document.getElementById('addNewCatBtn');
+    const categoryItemsList = document.getElementById('categoryItemsList');
+    const clearAllCatsBtn = document.getElementById('clearAllCatsBtn');
+
+    const settingsModal = document.getElementById('settingsModal');
+    const openSettingsModalBtn = document.getElementById('openSettingsModalBtn');
+    const closeSettingsModalBtn = document.getElementById('closeSettingsModalBtn');
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    const sheetsUrlInput = document.getElementById('sheetsUrlInput');
+    const settingsDownloadExtBtn = document.getElementById('settingsDownloadExtBtn');
+    const settingsPhoneInstallBtn = document.getElementById('settingsPhoneInstallBtn');
+
+    const mobileInstallModal = document.getElementById('mobileInstallModal');
+    const closeMobileInstallBtn = document.getElementById('closeMobileInstallBtn');
+    const gotItMobileBtn = document.getElementById('gotItMobileBtn');
+
+    const pctModal = document.getElementById('pctModal');
+    const openPctModalBtn = document.getElementById('openPctModalBtn');
+    const closePctModalBtn = document.getElementById('closePctModalBtn');
+    const savePctRulesBtn = document.getElementById('savePctRulesBtn');
+    const pctListContainer = document.getElementById('pctListContainer');
+    const modalEditingScope = document.getElementById('modalEditingScope');
+    const saveAsFutureDefaultsCheckbox = document.getElementById('saveAsFutureDefaultsCheckbox');
+    const syncNowBtn = document.getElementById('syncNowBtn');
+
     function getMonthKey(year = selectedYear, month = selectedMonth) {
       const yr = (typeof year === 'number' && !isNaN(year)) ? year : currentYear;
       const m = (typeof month === 'number' && !isNaN(month)) ? month : new Date().getMonth();
       return `${yr}-${m}`;
     }
 
-    // Returns the exact budget rules for the currently selected month.
-    // If not customized yet, it falls back to the recurring baseline template.
     function getRulesForCurrentMonth() {
       const key = getMonthKey();
       if (!monthlyBudgetLedger[key]) {
-        // Clone from recurring template defaults
         monthlyBudgetLedger[key] = JSON.parse(JSON.stringify(templateBudgetRules));
       }
       return monthlyBudgetLedger[key];
@@ -525,6 +917,7 @@
         MONTH_NAMES.forEach((m, idx) => {
           const opt = document.createElement('option');
           opt.value = `${idx}-${selectedYear}`;
+          // Display both Month and Year in the dropdown
           opt.textContent = `${m} ${selectedYear}`;
           if (idx === selectedMonth) opt.selected = true;
           periodSelect.appendChild(opt);
@@ -545,32 +938,40 @@
     });
 
     // --- Navigation Tabs ---
-    navDailyBtn.addEventListener('click', () => {
+    function switchToDailyTab() {
       currentTab = 'daily';
       dailyLogScreen.classList.remove('hidden');
       overviewScreen.classList.add('hidden');
-      periodSelectorContainer.classList.add('hidden');
+      frozenNetPane.classList.add('hidden');
       navDailyBtn.className = "flex-1 flex flex-col items-center justify-center gap-0.5 text-indigo-600 font-bold transition";
       navOverviewBtn.className = "flex-1 flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-slate-700 font-medium transition";
       headerTitle.textContent = "Daily Log";
-      currentSubTitle.textContent = `Budget ${currentYear} • Real-time Sync`;
+      currentSubTitle.textContent = `${currentYear}`;
       renderRecentTransactions();
-    });
+    }
 
-    navOverviewBtn.addEventListener('click', () => {
+    function switchToOverviewTab(focusAddCategory = false) {
       currentTab = 'overview';
       dailyLogScreen.classList.add('hidden');
       overviewScreen.classList.remove('hidden');
-      periodSelectorContainer.classList.remove('hidden');
+      frozenNetPane.classList.remove('hidden');
       navOverviewBtn.className = "flex-1 flex flex-col items-center justify-center gap-0.5 text-indigo-600 font-bold transition";
       navDailyBtn.className = "flex-1 flex flex-col items-center justify-center gap-0.5 text-slate-400 hover:text-slate-700 font-medium transition";
       headerTitle.textContent = "Overview";
-      currentSubTitle.textContent = "Formulas & Breakdown";
+      currentSubTitle.textContent = "Budgets & Net";
       updatePeriodDropdown();
       renderOverview();
-    });
 
-    // --- Timeframe Buttons (Month / Year) ---
+      if (focusAddCategory) {
+        currentType = 'expense';
+        setTimeout(() => openQuickAddCategoryModal('expense'), 100);
+      }
+    }
+
+    navDailyBtn.addEventListener('click', switchToDailyTab);
+    navOverviewBtn.addEventListener('click', () => switchToOverviewTab(false));
+
+    // Overview Timeframe Switcher (Month / Year)
     document.querySelectorAll('.overview-timeframe-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         document.querySelectorAll('.overview-timeframe-btn').forEach(b => {
@@ -588,26 +989,36 @@
       currentType = 'expense';
       typeExpenseBtn.className = "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-200 bg-white text-rose-600 shadow-sm";
       typeIncomeBtn.className = "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-200 text-slate-500 hover:text-slate-800";
+      recentActivityHeading.textContent = "Recent Expenses";
+      dailyAddIncomeCatBtn.classList.add('hidden');
       selectedPayment = 'Debit';
       updatePaymentChips();
       updateCategoryDropdown();
+      renderRecentTransactions();
     });
 
     typeIncomeBtn.addEventListener('click', () => {
       currentType = 'income';
       typeIncomeBtn.className = "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-200 bg-white text-emerald-600 shadow-sm";
       typeExpenseBtn.className = "flex-1 py-1.5 text-xs font-bold rounded-lg transition-all duration-200 text-slate-500 hover:text-slate-800";
+      recentActivityHeading.textContent = "Recent Income";
+      dailyAddIncomeCatBtn.classList.remove('hidden');
       selectedPayment = 'Direct Deposit';
       updatePaymentChips();
       updateCategoryDropdown();
+      renderRecentTransactions();
+    });
+
+    dailyAddIncomeCatBtn.addEventListener('click', () => {
+      openQuickAddCategoryModal('income');
     });
 
     // --- Payment Methods Chips ---
     function updatePaymentChips() {
       paymentMethodsChips.innerHTML = '';
-      const list = currentType === 'expense' ? EXPENSE_PAYMENTS : INCOME_PAYMENTS;
+      const list = currentType === 'expense' ? expensePayments : incomePayments;
       if (!list.includes(selectedPayment)) {
-        selectedPayment = list[0];
+        selectedPayment = list[0] || '';
       }
       list.forEach(method => {
         const isSelected = method === selectedPayment;
@@ -625,7 +1036,169 @@
         });
         paymentMethodsChips.appendChild(chip);
       });
+
+      // Edit Payment Methods Button (positioned directly to the right of the rightmost payment method chip)
+      const editBtn = document.createElement('button');
+      editBtn.type = 'button';
+      editBtn.id = 'openPaymentMethodsModalBtn';
+      editBtn.className = "w-8 h-7 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-indigo-50 text-slate-500 hover:text-indigo-600 border border-slate-200/80 transition text-xs shadow-sm";
+      editBtn.title = "Edit Payment Methods";
+      editBtn.innerHTML = `<i class="ph-bold ph-pencil-simple text-xs"></i>`;
+      editBtn.addEventListener('click', () => {
+        openPaymentModal(currentType);
+      });
+      paymentMethodsChips.appendChild(editBtn);
     }
+
+    // --- Payment Methods Manager Modal Logic ---
+    function openPaymentModal(type = 'expense') {
+      paymentManagerType = type;
+      if (paymentManagerType === 'expense') {
+        payTabExpense.className = "flex-1 py-1.5 rounded-lg bg-white text-rose-600 shadow-sm transition";
+        payTabIncome.className = "flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition";
+      } else {
+        payTabIncome.className = "flex-1 py-1.5 rounded-lg bg-white text-emerald-600 shadow-sm transition";
+        payTabExpense.className = "flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition";
+      }
+      newPaymentMethodInput.value = '';
+      renderPaymentMethodsList();
+      paymentMethodsModal.classList.remove('hidden');
+      setTimeout(() => newPaymentMethodInput.focus(), 60);
+    }
+
+    function closePaymentModal() {
+      paymentMethodsModal.classList.add('hidden');
+      updatePaymentChips();
+    }
+
+    closePaymentModalBtn.addEventListener('click', closePaymentModal);
+
+    payTabExpense.addEventListener('click', () => {
+      paymentManagerType = 'expense';
+      payTabExpense.className = "flex-1 py-1.5 rounded-lg bg-white text-rose-600 shadow-sm transition";
+      payTabIncome.className = "flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition";
+      renderPaymentMethodsList();
+    });
+
+    payTabIncome.addEventListener('click', () => {
+      paymentManagerType = 'income';
+      payTabIncome.className = "flex-1 py-1.5 rounded-lg bg-white text-emerald-600 shadow-sm transition";
+      payTabExpense.className = "flex-1 py-1.5 rounded-lg text-slate-500 hover:text-slate-800 transition";
+      renderPaymentMethodsList();
+    });
+
+    function renderPaymentMethodsList() {
+      paymentMethodsList.innerHTML = '';
+      const list = paymentManagerType === 'expense' ? expensePayments : incomePayments;
+
+      if (list.length === 0) {
+        paymentMethodsList.innerHTML = `
+          <div class="text-center py-5 text-slate-400 text-xs">
+            No payment methods configured. Add one above!
+          </div>
+        `;
+        return;
+      }
+
+      list.forEach((method, index) => {
+        const item = document.createElement('div');
+        item.className = "flex items-center justify-between px-3 py-2 bg-slate-50 border border-slate-200/70 rounded-xl text-xs font-semibold text-slate-700";
+
+        item.innerHTML = `
+          <span class="truncate max-w-[170px]">${method}</span>
+          <div class="flex items-center gap-1.5">
+            <button type="button" class="edit-method-btn text-slate-400 hover:text-indigo-600 p-1 rounded transition" title="Rename payment method">
+              <i class="ph-bold ph-pencil-simple text-xs"></i>
+            </button>
+            <button type="button" class="delete-method-btn text-slate-400 hover:text-rose-600 p-1 rounded transition" title="Delete payment method">
+              <i class="ph ph-trash text-sm"></i>
+            </button>
+          </div>
+        `;
+
+        // Rename Payment Method Inline
+        item.querySelector('.edit-method-btn').addEventListener('click', () => {
+          const newName = prompt(`Rename payment method "${method}":`, method);
+          if (newName && newName.trim() && newName.trim() !== method) {
+            const trimmed = newName.trim();
+            if (paymentManagerType === 'expense') {
+              expensePayments[index] = trimmed;
+              localStorage.setItem('budget_payments_expense', JSON.stringify(expensePayments));
+            } else {
+              incomePayments[index] = trimmed;
+              localStorage.setItem('budget_payments_income', JSON.stringify(incomePayments));
+            }
+            if (selectedPayment === method) selectedPayment = trimmed;
+            renderPaymentMethodsList();
+            updatePaymentChips();
+            showToast(`Renamed to "${trimmed}"`);
+          }
+        });
+
+        // Delete Payment Method
+        item.querySelector('.delete-method-btn').addEventListener('click', () => {
+          if (list.length <= 1) {
+            showToast("You must keep at least one payment method");
+            return;
+          }
+          if (paymentManagerType === 'expense') {
+            expensePayments.splice(index, 1);
+            localStorage.setItem('budget_payments_expense', JSON.stringify(expensePayments));
+          } else {
+            incomePayments.splice(index, 1);
+            localStorage.setItem('budget_payments_income', JSON.stringify(incomePayments));
+          }
+          if (selectedPayment === method) {
+            selectedPayment = (paymentManagerType === 'expense' ? expensePayments : incomePayments)[0] || '';
+          }
+          renderPaymentMethodsList();
+          updatePaymentChips();
+          showToast(`Deleted "${method}"`);
+        });
+
+        paymentMethodsList.appendChild(item);
+      });
+    }
+
+    addNewPaymentMethodBtn.addEventListener('click', () => {
+      const val = newPaymentMethodInput.value.trim();
+      if (!val) return;
+
+      const list = paymentManagerType === 'expense' ? expensePayments : incomePayments;
+      if (list.includes(val)) {
+        showToast("Payment method already exists");
+        return;
+      }
+
+      list.push(val);
+      if (paymentManagerType === 'expense') {
+        localStorage.setItem('budget_payments_expense', JSON.stringify(expensePayments));
+      } else {
+        localStorage.setItem('budget_payments_income', JSON.stringify(incomePayments));
+      }
+
+      newPaymentMethodInput.value = '';
+      renderPaymentMethodsList();
+      updatePaymentChips();
+      showToast(`Added "${val}"`);
+    });
+
+    newPaymentMethodInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addNewPaymentMethodBtn.click();
+    });
+
+    resetPaymentMethodsBtn.addEventListener('click', () => {
+      if (paymentManagerType === 'expense') {
+        expensePayments = [...DEFAULT_EXPENSE_PAYMENTS];
+        localStorage.setItem('budget_payments_expense', JSON.stringify(expensePayments));
+      } else {
+        incomePayments = [...DEFAULT_INCOME_PAYMENTS];
+        localStorage.setItem('budget_payments_income', JSON.stringify(incomePayments));
+      }
+      renderPaymentMethodsList();
+      updatePaymentChips();
+      showToast("Reset to default payment methods");
+    });
 
     // --- Category Dropdown Setup ---
     function updateCategoryDropdown(selectedVal = null) {
@@ -635,7 +1208,7 @@
       if (list.length === 0) {
         const placeholder = document.createElement('option');
         placeholder.value = "";
-        placeholder.textContent = "-- No categories yet --";
+        placeholder.textContent = `-- No ${currentType} categories yet --`;
         placeholder.disabled = true;
         placeholder.selected = true;
         categorySelect.appendChild(placeholder);
@@ -649,25 +1222,82 @@
         });
       }
 
-      const addOption = document.createElement('option');
-      addOption.value = "__ADD_NEW__";
-      addOption.textContent = "+ Add New Category...";
-      categorySelect.appendChild(addOption);
+      // Option to add category from Daily Log
+      if (currentType === 'income') {
+        const addOption = document.createElement('option');
+        addOption.value = "__ADD_INCOME_CAT__";
+        addOption.textContent = "➕ Add Income Category...";
+        categorySelect.appendChild(addOption);
+      } else {
+        const addOption = document.createElement('option');
+        addOption.value = "__ADD_EXPENSE_OVERVIEW__";
+        addOption.textContent = "➕ Add Expense Category...";
+        categorySelect.appendChild(addOption);
+      }
 
       if (selectedVal && list.includes(selectedVal)) {
         categorySelect.value = selectedVal;
-      } else if (list.length > 0 && (!categorySelect.value || categorySelect.value === '__ADD_NEW__')) {
+      } else if (list.length > 0 && (!categorySelect.value || categorySelect.value.startsWith('__'))) {
         categorySelect.value = list[0];
+      }
+
+      updateSubcategoryDropdown();
+    }
+
+    categorySelect.addEventListener('change', (e) => {
+      if (e.target.value === '__ADD_INCOME_CAT__') {
+        openQuickAddCategoryModal('income');
+      } else if (e.target.value === '__ADD_EXPENSE_OVERVIEW__') {
+        switchToOverviewTab(true);
+      } else {
+        updateSubcategoryDropdown();
+      }
+    });
+
+    // --- Subcategory Dropdown Logic for Daily Log ---
+    function updateSubcategoryDropdown() {
+      const selectedCat = categorySelect.value;
+      const subcatList = subcategories[selectedCat] || [];
+      const subcatRow = document.getElementById('subcatRow');
+      const subcatSelect = document.getElementById('subcategorySelect');
+
+      if (!subcatRow || !subcatSelect) return;
+
+      if (subcatList.length > 0) {
+        subcatRow.classList.remove('hidden');
+        subcatSelect.innerHTML = '<option value="">-- None / General --</option>';
+        subcatList.forEach(sub => {
+          const opt = document.createElement('option');
+          opt.value = sub;
+          opt.textContent = sub;
+          subcatSelect.appendChild(opt);
+        });
+      } else {
+        subcatRow.classList.add('hidden');
+        subcatSelect.innerHTML = '';
       }
     }
 
-    // --- Quick Add Category Modal Logic ---
-    function openQuickAddCategoryModal() {
-      const typeLabel = currentType === 'expense' ? 'Expense' : 'Income';
-      quickAddModalTitle.textContent = `Add ${typeLabel} Category`;
+    dateInput.addEventListener('change', () => {
+      userHasManuallyChangedDate = true;
+    });
+
+    // --- Quick Add Category Modal ---
+    function openQuickAddCategoryModal(type = 'expense') {
+      currentType = type;
+      quickAddModalTitle.textContent = type === 'expense' ? 'Add Expense Category' : 'Add Income Stream';
       quickAddCatNameInput.value = '';
+      quickAddBaseBudget.value = '';
+      quickAddPctBudget.value = '';
+
+      if (type === 'expense') {
+        quickAddBudgetFields.classList.remove('hidden');
+      } else {
+        quickAddBudgetFields.classList.add('hidden');
+      }
+
       quickAddModal.classList.remove('hidden');
-      setTimeout(() => quickAddCatNameInput.focus(), 50);
+      setTimeout(() => quickAddCatNameInput.focus(), 60);
     }
 
     function closeQuickAddCategoryModal() {
@@ -680,69 +1310,39 @@
       if (!name) return;
 
       if (currentType === 'expense') {
-        if (!expenseCategories.includes(name)) {
-          expenseCategories.push(name);
-        }
-        if (!templateBudgetRules[name]) {
-          templateBudgetRules[name] = { fixed: 0, percent: 0 };
-        }
+        if (!expenseCategories.includes(name)) expenseCategories.push(name);
         
-        // Ensure the current month ledger has an entry
+        const base = parseFloat(quickAddBaseBudget.value) || 0;
+        const pct = parseFloat(quickAddPctBudget.value) || 0;
+        const newRule = { fixed: base, percent: pct };
+
+        templateBudgetRules[name] = newRule;
+        
         const monthKey = getMonthKey();
         if (!monthlyBudgetLedger[monthKey]) monthlyBudgetLedger[monthKey] = {};
-        if (!monthlyBudgetLedger[monthKey][name]) {
-          monthlyBudgetLedger[monthKey][name] = { fixed: 0, percent: 0 };
-        }
+        monthlyBudgetLedger[monthKey][name] = newRule;
 
-        // By default, save as recurring so user doesn't have to re-enter each month
-        if (!recurringCategories.includes(name)) {
-          recurringCategories.push(name);
-        }
+        if (!recurringCategories.includes(name)) recurringCategories.push(name);
 
         localStorage.setItem('budget_cats_expense', JSON.stringify(expenseCategories));
         localStorage.setItem('budget_rules_monthly', JSON.stringify(templateBudgetRules));
         localStorage.setItem('budget_ledger_by_month', JSON.stringify(monthlyBudgetLedger));
         localStorage.setItem('budget_cats_recurring', JSON.stringify(recurringCategories));
       } else {
-        if (!incomeCategories.includes(name)) {
-          incomeCategories.push(name);
-        }
-        if (!recurringCategories.includes(name)) {
-          recurringCategories.push(name);
-        }
+        if (!incomeCategories.includes(name)) incomeCategories.push(name);
+        if (!recurringCategories.includes(name)) recurringCategories.push(name);
         localStorage.setItem('budget_cats_income', JSON.stringify(incomeCategories));
         localStorage.setItem('budget_cats_recurring', JSON.stringify(recurringCategories));
       }
 
       updateCategoryDropdown(name);
-      if (currentTab === 'overview') {
-        renderOverview();
-      }
+      if (currentTab === 'overview') renderOverview();
       showToast(`Saved "${name}"`);
       quickAddModal.classList.add('hidden');
     }
 
-    categorySelect.addEventListener('change', (e) => {
-      if (e.target.value === '__ADD_NEW__') {
-        openQuickAddCategoryModal();
-      }
-    });
-
-    // Mark manual override when the user alters the date picker
-    dateInput.addEventListener('change', () => {
-      userHasManuallyChangedDate = true;
-    });
-
-    quickAddCatBtn.addEventListener('click', openQuickAddCategoryModal);
-    
-    // Overview "+ Category" trigger
-    const overviewAddCatBtn = document.getElementById('overviewAddCatBtn');
-    if (overviewAddCatBtn) {
-      overviewAddCatBtn.addEventListener('click', () => {
-        currentType = 'expense';
-        openQuickAddCategoryModal();
-      });
-    }
+    overviewAddExpenseCatBtn.addEventListener('click', () => openQuickAddCategoryModal('expense'));
+    overviewAddIncomeCatBtn.addEventListener('click', () => openQuickAddCategoryModal('income'));
 
     closeQuickAddModal.addEventListener('click', closeQuickAddCategoryModal);
     cancelQuickAddBtn.addEventListener('click', closeQuickAddCategoryModal);
@@ -752,14 +1352,153 @@
       else if (e.key === 'Escape') closeQuickAddCategoryModal();
     });
 
+    // --- Category Drill-Down Details & Purchases Modal Logic ---
+    function openCategoryDetailModal(catName) {
+      activeDetailCategory = catName;
+      catDetailTitle.textContent = catName;
+      catDetailMonthLabel.textContent = `${MONTH_NAMES[selectedMonth]} ${selectedYear}`;
+
+      const activeRules = getRulesForCurrentMonth();
+      const currentRule = activeRules[catName] || templateBudgetRules[catName] || { fixed: 0, percent: 0 };
+      catDetailBaseInp.value = currentRule.fixed || 0;
+      catDetailPctInp.value = currentRule.percent || 0;
+
+      // Populate Purchases from Daily Log for this category strictly for the selected month
+      catDetailTxList.innerHTML = '';
+      const matchingTxs = transactions.filter(t => {
+        if (t.type !== 'expense' || t.category !== catName || !t.date) return false;
+        const d = new Date(t.date + 'T00:00:00');
+        // Filter strictly by the active month and year selected
+        return d.getFullYear() === selectedYear && d.getMonth() === selectedMonth;
+      });
+
+      const totalSpent = matchingTxs.reduce((sum, t) => sum + t.amount, 0);
+      catDetailTxTotal.textContent = `$${totalSpent.toFixed(2)}`;
+
+      if (matchingTxs.length === 0) {
+        catDetailTxList.innerHTML = `
+          <div class="text-center py-5 bg-slate-50 border border-slate-100 rounded-xl text-slate-400 text-xs">
+            No purchases logged for this category in ${MONTH_NAMES[selectedMonth]}.
+          </div>
+        `;
+      } else {
+        matchingTxs.forEach(tx => {
+          const item = document.createElement('div');
+          item.className = "p-2 bg-slate-50 border border-slate-200/60 rounded-xl flex items-center justify-between text-xs";
+          const subBadge = tx.subcategory ? `<span class="text-[9px] bg-slate-200/80 text-slate-700 px-1 py-0.5 rounded ml-1 font-medium">${tx.subcategory}</span>` : '';
+          item.innerHTML = `
+            <div>
+              <p class="font-bold text-slate-800">${tx.date} ${subBadge}</p>
+              <p class="text-[10px] text-slate-400">${tx.paymentMethod}</p>
+            </div>
+            <span class="font-extrabold text-rose-600">-$${tx.amount.toFixed(2)}</span>
+          `;
+          catDetailTxList.appendChild(item);
+        });
+      }
+
+      categoryDetailModal.classList.remove('hidden');
+    }
+
+    closeCatDetailModalBtn.addEventListener('click', () => {
+      categoryDetailModal.classList.add('hidden');
+    });
+
+    catDetailSaveBudgetBtn.addEventListener('click', () => {
+      if (!activeDetailCategory) return;
+      const baseVal = parseFloat(catDetailBaseInp.value) || 0;
+      const pctVal = parseFloat(catDetailPctInp.value) || 0;
+      const monthKey = getMonthKey();
+
+      if (!monthlyBudgetLedger[monthKey]) monthlyBudgetLedger[monthKey] = {};
+      monthlyBudgetLedger[monthKey][activeDetailCategory] = { fixed: baseVal, percent: pctVal };
+      templateBudgetRules[activeDetailCategory] = { fixed: baseVal, percent: pctVal };
+
+      localStorage.setItem('budget_ledger_by_month', JSON.stringify(monthlyBudgetLedger));
+      localStorage.setItem('budget_rules_monthly', JSON.stringify(templateBudgetRules));
+
+      showToast(`Updated budget for "${activeDetailCategory}"`);
+      categoryDetailModal.classList.add('hidden');
+      renderOverview();
+    });
+
+    // --- Subcategory Management Modal with Budget Support ---
+    function openAddSubcatModal(parentCat, existingSubcat = null) {
+      targetParentForSubcat = parentCat;
+      editingSubcatName = existingSubcat;
+      subcatParentNameLabel.textContent = `Parent: ${parentCat}`;
+
+      if (existingSubcat) {
+        subcatModalTitle.textContent = `Edit Subcategory`;
+        newSubcatNameInput.value = existingSubcat;
+        const ruleKey = `${parentCat}__${existingSubcat}`;
+        const existingRule = subcategoryRules[ruleKey] || { fixed: 0, percent: 0 };
+        subcatBaseBudgetInput.value = existingRule.fixed || 0;
+        subcatPctBudgetInput.value = existingRule.percent || 0;
+      } else {
+        subcatModalTitle.textContent = `Add Subcategory`;
+        newSubcatNameInput.value = '';
+        subcatBaseBudgetInput.value = '';
+        subcatPctBudgetInput.value = '';
+      }
+
+      subcatModal.classList.remove('hidden');
+      setTimeout(() => newSubcatNameInput.focus(), 60);
+    }
+
+    function closeAddSubcatModal() {
+      subcatModal.classList.add('hidden');
+      targetParentForSubcat = '';
+      editingSubcatName = null;
+    }
+
+    function saveNewSubcategory() {
+      const subName = newSubcatNameInput.value.trim();
+      if (!subName || !targetParentForSubcat) return;
+
+      if (!subcategories[targetParentForSubcat]) {
+        subcategories[targetParentForSubcat] = [];
+      }
+
+      if (editingSubcatName && editingSubcatName !== subName) {
+        subcategories[targetParentForSubcat] = subcategories[targetParentForSubcat].map(s => s === editingSubcatName ? subName : s);
+        delete subcategoryRules[`${targetParentForSubcat}__${editingSubcatName}`];
+      } else if (!subcategories[targetParentForSubcat].includes(subName)) {
+        subcategories[targetParentForSubcat].push(subName);
+      }
+
+      // Save subcategory budget rule
+      const base = parseFloat(subcatBaseBudgetInput.value) || 0;
+      const pct = parseFloat(subcatPctBudgetInput.value) || 0;
+      subcategoryRules[`${targetParentForSubcat}__${subName}`] = { fixed: base, percent: pct };
+
+      localStorage.setItem('budget_subcategories', JSON.stringify(subcategories));
+      localStorage.setItem('budget_subcat_rules', JSON.stringify(subcategoryRules));
+      showToast(`Saved subcategory "${subName}"`);
+
+      closeAddSubcatModal();
+      updateSubcategoryDropdown();
+      if (currentTab === 'overview') renderOverview();
+    }
+
+    closeSubcatModalBtn.addEventListener('click', closeAddSubcatModal);
+    cancelSubcatBtn.addEventListener('click', closeAddSubcatModal);
+    confirmSubcatBtn.addEventListener('click', saveNewSubcategory);
+    newSubcatNameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') saveNewSubcategory();
+      else if (e.key === 'Escape') closeAddSubcatModal();
+    });
+
     // --- Add Transaction Action ---
     addEntryBtn.addEventListener('click', async () => {
       const amountVal = parseFloat(amountInput.value);
       const catVal = categorySelect.value;
       const dateVal = dateInput.value;
+      const subcatSelect = document.getElementById('subcategorySelect');
+      const subcatVal = subcatSelect ? subcatSelect.value : '';
 
-      if (!catVal || catVal === '__ADD_NEW__') {
-        openQuickAddCategoryModal();
+      if (!catVal || catVal === '__GO_TO_OVERVIEW__') {
+        showToast("Please select a category");
         return;
       }
 
@@ -774,25 +1513,25 @@
         type: currentType,
         amount: amountVal,
         category: catVal,
-        date: dateVal,
-        paymentMethod: selectedPayment
+        subcategory: subcatVal || '',
+        paymentMethod: selectedPayment,
+        date: dateVal || getTodayLocalDateString()
       };
 
       transactions.unshift(newTx);
       localStorage.setItem('budget_transactions', JSON.stringify(transactions));
 
       amountInput.value = '';
-      
-      // Keep today's date automatically unless the user manually selected another date
       if (!userHasManuallyChangedDate) {
         dateInput.value = getTodayLocalDateString();
       }
 
-      showToast("Transaction saved");
       renderRecentTransactions();
+      showToast(`Logged ${currentType === 'expense' ? 'Expense' : 'Income'}: $${amountVal.toFixed(2)}`);
 
+      // Cloud Push if Google Sheet URL configured
       if (scriptUrl) {
-        syncStatusNotice.textContent = "Syncing to Google Sheets...";
+        syncStatusNotice.textContent = "Syncing with Google Sheets...";
         try {
           await fetch(scriptUrl, {
             method: 'POST',
@@ -801,15 +1540,16 @@
             body: JSON.stringify({
               date: newTx.date,
               amount: newTx.amount,
-              purpose: newTx.category,
+              purpose: newTx.subcategory ? `${newTx.category} (${newTx.subcategory})` : newTx.category,
               how: newTx.paymentMethod,
               type: newTx.type
             })
           });
-          syncStatusNotice.textContent = "✓ Synced to Sheet in real-time";
-          setTimeout(() => { syncStatusNotice.textContent = ""; }, 2500);
+          syncStatusNotice.textContent = "✓ Saved to Google Sheet";
+          setTimeout(() => { syncStatusNotice.textContent = ""; }, 3000);
         } catch (err) {
-          syncStatusNotice.textContent = "Saved locally (Sync offline)";
+          syncStatusNotice.textContent = "Saved locally (offline)";
+          setTimeout(() => { syncStatusNotice.textContent = ""; }, 3000);
         }
       }
     });
@@ -817,24 +1557,40 @@
     // --- Render Recent Transactions ---
     function renderRecentTransactions() {
       recentTxContainer.innerHTML = '';
-      txCountBadge.textContent = `${transactions.length} entries`;
+      
+      const now = new Date();
+      const currentYearNum = now.getFullYear();
+      const currentMonthNum = now.getMonth();
 
-      if (transactions.length === 0) {
+      // Only show entries from the 1st day of the current calendar month onward
+      const filtered = transactions.filter(t => {
+        if (t.type !== currentType || !t.date) return false;
+        const d = new Date(t.date + 'T00:00:00');
+        return d.getFullYear() === currentYearNum && d.getMonth() === currentMonthNum;
+      });
+
+      txCountBadge.textContent = `${filtered.length} entries`;
+
+      if (filtered.length === 0) {
         recentTxContainer.innerHTML = `
           <div class="text-center py-8 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 space-y-1">
             <i class="ph ph-receipt text-2xl"></i>
-            <p class="text-xs font-medium">No transactions recorded yet.</p>
-            <p class="text-[11px] text-slate-400">Add an expense or income to begin.</p>
+            <p class="text-xs font-medium">No ${currentType} entries for ${MONTH_NAMES[currentMonthNum]}.</p>
+            <p class="text-[11px] text-slate-400">Log your first ${currentType} above.</p>
           </div>
         `;
         return;
       }
 
-      const recentItems = transactions.slice(0, 15);
+      const recentItems = filtered.slice(0, 15);
       recentItems.forEach(tx => {
         const isExp = tx.type === 'expense';
         const card = document.createElement('div');
         card.className = "flex items-center justify-between p-3 bg-white border border-slate-200/70 rounded-xl hover:border-slate-300 transition group";
+
+        const subcatBadge = tx.subcategory 
+          ? `<span class="text-[9px] bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded font-medium ml-1">${tx.subcategory}</span>` 
+          : '';
 
         card.innerHTML = `
           <div class="flex items-center gap-2.5">
@@ -844,7 +1600,10 @@
               <i class="ph ${isExp ? 'ph-arrow-up-right' : 'ph-arrow-down-left'}"></i>
             </div>
             <div>
-              <p class="text-xs font-bold text-slate-800 leading-tight">${tx.category}</p>
+              <p class="text-xs font-bold text-slate-800 leading-tight flex items-center">
+                <span>${tx.category}</span>
+                ${subcatBadge}
+              </p>
               <p class="text-[10px] font-medium text-slate-400">${tx.date} • ${tx.paymentMethod}</p>
             </div>
           </div>
@@ -886,18 +1645,324 @@
       });
     }
 
+    function renderYearlyChart(year) {
+      const chartContainer = document.getElementById('yearlyChartContainer');
+      if (!chartContainer) return;
+
+      const monthlyTotals = Array.from({ length: 12 }, () => ({ expense: 0, income: 0 }));
+      transactions.forEach(tx => {
+        if (!tx.date) return;
+        const d = new Date(tx.date + 'T00:00:00');
+        if (d.getFullYear() === year) {
+          const m = d.getMonth();
+          if (tx.type === 'income') {
+            monthlyTotals[m].income += tx.amount;
+          } else {
+            monthlyTotals[m].expense += tx.amount;
+          }
+        }
+      });
+
+      const maxVal = Math.max(
+        ...monthlyTotals.map(t => Math.max(t.expense, t.income)),
+        100
+      );
+
+      const width = 320;
+      const height = 180;
+      const padLeft = 45;
+      const padRight = 10;
+      const padTop = 15;
+      const padBottom = 25;
+      const chartW = width - padLeft - padRight;
+      const chartH = height - padTop - padBottom;
+
+      const barSlotW = chartW / 12;
+      const barW = Math.max(barSlotW * 0.55, 6);
+
+      const getY = (val) => padTop + chartH - (val / maxVal) * chartH;
+      const getX = (mIdx) => padLeft + mIdx * barSlotW + barSlotW / 2;
+
+      let barsSvg = '';
+      monthlyTotals.forEach((t, i) => {
+        const x = getX(i) - barW / 2;
+        const barH = (t.expense / maxVal) * chartH;
+        const y = padTop + chartH - barH;
+        barsSvg += `<rect x="${x}" y="${y}" width="${barW}" height="${barH}" rx="3" fill="#fb7185" class="transition-all hover:opacity-80"><title>${MONTH_NAMES[i]}: $${t.expense.toFixed(2)} Spent</title></rect>`;
+      });
+
+      let linePoints = [];
+      let dotsSvg = '';
+      monthlyTotals.forEach((t, i) => {
+        const x = getX(i);
+        const y = getY(t.income);
+        linePoints.push(`${x},${y}`);
+        dotsSvg += `<circle cx="${x}" cy="${y}" r="3" fill="#10b981" stroke="#ffffff" stroke-width="1.5"><title>${MONTH_NAMES[i]}: $${t.income.toFixed(2)} Income</title></circle>`;
+      });
+
+      const lineSvg = `<polyline fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" points="${linePoints.join(' ')}" />`;
+
+      const yTicks = [0, maxVal * 0.5, maxVal];
+      let yAxisSvg = '';
+      yTicks.forEach(tickVal => {
+        const y = getY(tickVal);
+        yAxisSvg += `
+          <line x1="${padLeft}" y1="${y}" x2="${width - padRight}" y2="${y}" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="2,2" />
+          <text x="${padLeft - 4}" y="${y + 3}" text-anchor="end" font-size="8" font-weight="600" fill="#94a3b8">$${Math.round(tickVal)}</text>
+        `;
+      });
+
+      let xAxisSvg = '';
+      monthlyTotals.forEach((_, i) => {
+        const x = getX(i);
+        const shortName = SHORT_MONTH_NAMES[i].substring(0, 1);
+        xAxisSvg += `<text x="${x}" y="${height - 8}" text-anchor="middle" font-size="8" font-weight="700" fill="#64748b">${shortName}</text>`;
+      });
+
+      chartContainer.innerHTML = `
+        <svg viewBox="0 0 ${width} ${height}" class="w-full h-full overflow-visible">
+          ${yAxisSvg}
+          ${barsSvg}
+          ${lineSvg}
+          ${dotsSvg}
+          ${xAxisSvg}
+        </svg>
+      `;
+    }
+
+    function renderYearlyBreakdowns(year) {
+      const yearTxs = transactions.filter(t => {
+        if (!t.date) return false;
+        const d = new Date(t.date + 'T00:00:00');
+        return d.getFullYear() === year;
+      });
+
+      let totalExpense = 0;
+      let totalIncome = 0;
+
+      const expenseCats = {};
+      const expenseSubcats = {};
+      const incomeCats = {};
+
+      const expMethods = { Debit: 0, Credit: 0, Venmo: 0, Cash: 0 };
+      const incMethods = { "Direct Deposit": 0, Venmo: 0, Cash: 0, Check: 0 };
+
+      yearTxs.forEach(t => {
+        if (t.type === 'expense') {
+          totalExpense += t.amount;
+          expenseCats[t.category] = (expenseCats[t.category] || 0) + t.amount;
+          if (t.subcategory) {
+            const subKey = `${t.category}__${t.subcategory}`;
+            expenseSubcats[subKey] = (expenseSubcats[subKey] || 0) + t.amount;
+          }
+          if (expMethods.hasOwnProperty(t.paymentMethod)) {
+            expMethods[t.paymentMethod] += t.amount;
+          } else {
+            expMethods[t.paymentMethod] = (expMethods[t.paymentMethod] || 0) + t.amount;
+          }
+        } else if (t.type === 'income') {
+          totalIncome += t.amount;
+          incomeCats[t.category] = (incomeCats[t.category] || 0) + t.amount;
+          if (incMethods.hasOwnProperty(t.paymentMethod)) {
+            incMethods[t.paymentMethod] += t.amount;
+          } else {
+            incMethods[t.paymentMethod] = (incMethods[t.paymentMethod] || 0) + t.amount;
+          }
+        }
+      });
+
+      // Update total badges
+      const yearlyTotalExpenseLabel = document.getElementById('yearlyTotalExpenseLabel');
+      const yearlyTotalIncomeLabel = document.getElementById('yearlyTotalIncomeLabel');
+      const yearlyExpMethodTotal = document.getElementById('yearlyExpMethodTotal');
+      const yearlyIncMethodTotal = document.getElementById('yearlyIncMethodTotal');
+
+      if (yearlyTotalExpenseLabel) yearlyTotalExpenseLabel.textContent = `$${totalExpense.toFixed(2)}`;
+      if (yearlyTotalIncomeLabel) yearlyTotalIncomeLabel.textContent = `$${totalIncome.toFixed(2)}`;
+      if (yearlyExpMethodTotal) yearlyExpMethodTotal.textContent = `$${totalExpense.toFixed(2)}`;
+      if (yearlyIncMethodTotal) yearlyIncMethodTotal.textContent = `$${totalIncome.toFixed(2)}`;
+
+      // 1. Render Expense Payment Methods sorted highest to lowest
+      const expMethodsContainer = document.getElementById('yearlyExpenseMethodsList');
+      if (expMethodsContainer) {
+        expMethodsContainer.innerHTML = '';
+        const sortedExpMethods = Object.entries(expMethods).sort((a, b) => b[1] - a[1]);
+        sortedExpMethods.forEach(([method, amt]) => {
+          const pct = totalExpense > 0 ? (amt / totalExpense) * 100 : 0;
+          const row = document.createElement('div');
+          row.className = "flex items-center justify-between text-xs p-1.5 rounded-lg bg-slate-50 border border-slate-100";
+          row.innerHTML = `
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span class="font-bold text-slate-700 truncate">${method}</span>
+              <span class="text-[10px] text-slate-400">(${pct.toFixed(0)}%)</span>
+            </div>
+            <span class="font-black text-rose-600 text-xs">$${amt.toFixed(2)}</span>
+          `;
+          expMethodsContainer.appendChild(row);
+        });
+      }
+
+      // 2. Render Income Payment Methods sorted highest to lowest
+      const incMethodsContainer = document.getElementById('yearlyIncomeMethodsList');
+      if (incMethodsContainer) {
+        incMethodsContainer.innerHTML = '';
+        const sortedIncMethods = Object.entries(incMethods).sort((a, b) => b[1] - a[1]);
+        sortedIncMethods.forEach(([method, amt]) => {
+          const pct = totalIncome > 0 ? (amt / totalIncome) * 100 : 0;
+          const row = document.createElement('div');
+          row.className = "flex items-center justify-between text-xs p-1.5 rounded-lg bg-slate-50 border border-slate-100";
+          row.innerHTML = `
+            <div class="flex items-center gap-1.5 min-w-0">
+              <span class="font-bold text-slate-700 truncate">${method}</span>
+              <span class="text-[10px] text-slate-400">(${pct.toFixed(0)}%)</span>
+            </div>
+            <span class="font-black text-emerald-600 text-xs">$${amt.toFixed(2)}</span>
+          `;
+          incMethodsContainer.appendChild(row);
+        });
+      }
+
+      // 3. Render Expense Categories & Subcategories
+      const catBreakdownContainer = document.getElementById('yearlyCategoryBreakdownList');
+      if (catBreakdownContainer) {
+        catBreakdownContainer.innerHTML = '';
+
+        // Combine configured categories with any that appear in transactions
+        const allExpCategories = Array.from(new Set([...expenseCategories, ...Object.keys(expenseCats)]));
+
+        if (allExpCategories.length === 0) {
+          catBreakdownContainer.innerHTML = `
+            <div class="text-center py-4 text-xs text-slate-400">No expense categories logged for ${year}.</div>
+          `;
+        } else {
+          // Sort categories by highest spend first
+          allExpCategories.sort((a, b) => (expenseCats[b] || 0) - (expenseCats[a] || 0));
+
+          allExpCategories.forEach(cat => {
+            const spent = expenseCats[cat] || 0;
+            const pct = totalExpense > 0 ? (spent / totalExpense) * 100 : 0;
+            const subs = subcategories[cat] || [];
+
+            let subHtml = '';
+            if (subs.length > 0) {
+              subHtml = `
+                <div class="mt-1 pt-1 border-t border-slate-100 space-y-1">
+                  ${subs.map(sub => {
+                    const subAmt = expenseSubcats[`${cat}__${sub}`] || 0;
+                    const subPct = spent > 0 ? (subAmt / spent) * 100 : 0;
+                    return `
+                      <div class="flex items-center justify-between text-[11px] text-slate-500 pl-2">
+                        <span class="truncate">• ${sub}</span>
+                        <div class="flex items-center gap-1.5">
+                          <span class="text-[10px] text-slate-400">${subPct.toFixed(0)}%</span>
+                          <span class="font-bold text-slate-700">$${subAmt.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              `;
+            }
+
+            const card = document.createElement('div');
+            card.className = "p-2.5 rounded-xl border border-slate-200/70 bg-slate-50/50 space-y-1.5";
+            card.innerHTML = `
+              <div class="flex items-center justify-between text-xs">
+                <div class="flex items-center gap-1.5 min-w-0">
+                  <span class="font-bold text-slate-800 truncate">${cat}</span>
+                  <span class="text-[10px] font-semibold text-slate-400">(${pct.toFixed(1)}%)</span>
+                </div>
+                <span class="font-black text-rose-600">$${spent.toFixed(2)}</span>
+              </div>
+              <div class="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">
+                <div class="bg-rose-500 h-full rounded-full" style="width: ${Math.min(pct, 100)}%"></div>
+              </div>
+              ${subHtml}
+            `;
+            catBreakdownContainer.appendChild(card);
+          });
+        }
+      }
+
+      // 4. Render Income Streams Breakdown
+      const incBreakdownContainer = document.getElementById('yearlyIncomeBreakdownList');
+      if (incBreakdownContainer) {
+        incBreakdownContainer.innerHTML = '';
+        const allIncCategories = Array.from(new Set([...incomeCategories, ...Object.keys(incomeCats)]));
+
+        if (allIncCategories.length === 0) {
+          incBreakdownContainer.innerHTML = `
+            <div class="text-center py-4 text-xs text-slate-400">No income streams logged for ${year}.</div>
+          `;
+        } else {
+          // Sort income streams by highest received first
+          allIncCategories.sort((a, b) => (incomeCats[b] || 0) - (incomeCats[a] || 0));
+
+          allIncCategories.forEach(incCat => {
+            const earned = incomeCats[incCat] || 0;
+            const pct = totalIncome > 0 ? (earned / totalIncome) * 100 : 0;
+            const item = document.createElement('div');
+            item.className = "flex items-center justify-between text-xs p-2 rounded-xl bg-emerald-50/50 border border-emerald-100/70";
+            item.innerHTML = `
+              <div class="flex items-center gap-2 min-w-0">
+                <div class="w-5 h-5 rounded-md bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-[10px]">
+                  <i class="ph-bold ph-arrow-down-left"></i>
+                </div>
+                <span class="font-bold text-slate-800 truncate">${incCat}</span>
+                <span class="text-[10px] text-slate-400 font-semibold">(${pct.toFixed(1)}%)</span>
+              </div>
+              <span class="font-black text-emerald-700">+$${earned.toFixed(2)}</span>
+            `;
+            incBreakdownContainer.appendChild(item);
+          });
+        }
+      }
+    }
+
+    function updateFrozenNetPane(net, isYear) {
+      const isGain = net >= 0;
+      const absNet = Math.abs(net);
+
+      frozenNetPane.classList.remove('hidden');
+
+      if (isGain) {
+        frozenNetIcon.className = "w-7 h-7 rounded-lg flex items-center justify-center font-black text-xs bg-emerald-100 text-emerald-700";
+        frozenNetIcon.innerHTML = `<i class="ph-bold ph-trend-up"></i>`;
+        frozenNetLabel.textContent = "Net Gain";
+        frozenNetLabel.className = "text-[11px] uppercase tracking-wider font-extrabold text-emerald-700";
+        frozenNetValue.textContent = `+$${absNet.toFixed(2)}`;
+        frozenNetValue.className = "text-base font-black text-emerald-600";
+      } else {
+        frozenNetIcon.className = "w-7 h-7 rounded-lg flex items-center justify-center font-black text-xs bg-rose-100 text-rose-700";
+        frozenNetIcon.innerHTML = `<i class="ph-bold ph-trend-down"></i>`;
+        frozenNetLabel.textContent = "Net Loss";
+        frozenNetLabel.className = "text-[11px] uppercase tracking-wider font-extrabold text-rose-700";
+        frozenNetValue.textContent = `-$${absNet.toFixed(2)}`;
+        frozenNetValue.className = "text-base font-black text-rose-600";
+      }
+
+      frozenNetPeriod.textContent = isYear ? `Full Year ${selectedYear}` : `${MONTH_NAMES[selectedMonth]} ${selectedYear}`;
+    }
+
     function renderOverview() {
       const filtered = filterTransactionsBySelectedPeriod();
       let totalIncome = 0;
       let totalSpent = 0;
       const spentByCategory = {};
+      const incomeByCategory = {};
+      const subcatSpent = {};
 
       filtered.forEach(tx => {
         if (tx.type === 'income') {
           totalIncome += tx.amount;
+          incomeByCategory[tx.category] = (incomeByCategory[tx.category] || 0) + tx.amount;
         } else {
           totalSpent += tx.amount;
           spentByCategory[tx.category] = (spentByCategory[tx.category] || 0) + tx.amount;
+          if (tx.subcategory) {
+            const key = `${tx.category}__${tx.subcategory}`;
+            subcatSpent[key] = (subcatSpent[key] || 0) + tx.amount;
+          }
         }
       });
 
@@ -907,9 +1972,13 @@
       kpiNet.textContent = `$${net.toFixed(2)}`;
       kpiNet.className = `text-sm font-extrabold mt-0.5 ${net >= 0 ? 'text-slate-800' : 'text-rose-600'}`;
 
+      updateFrozenNetPane(net, currentOverviewTimeframe === 'year');
+
       if (currentOverviewTimeframe === 'year') {
         categoryBudgetsSection.classList.add('hidden');
         yearlyNotice.classList.remove('hidden');
+        renderYearlyChart(selectedYear);
+        renderYearlyBreakdowns(selectedYear);
         return;
       } else {
         categoryBudgetsSection.classList.remove('hidden');
@@ -917,146 +1986,386 @@
       }
 
       budgetProgressList.innerHTML = '';
+      const activeRules = getRulesForCurrentMonth();
+
+      // 1. Budgeted Expenses Collapsible Section Header Bar
+      const expHeaderBar = document.createElement('div');
+      expHeaderBar.className = "flex items-center justify-between p-2.5 bg-slate-100/80 hover:bg-slate-200/70 border border-slate-200/80 rounded-xl cursor-pointer select-none transition group";
+      expHeaderBar.title = "Click to expand or collapse Budgeted Expenses";
+      expHeaderBar.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i class="ph-bold ${expensesCollapsed ? 'ph-caret-right' : 'ph-caret-down'} text-slate-500 text-xs transition-transform duration-200"></i>
+          <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Budgeted Expenses</span>
+          <span class="text-[10px] font-semibold text-slate-500 bg-white px-2 py-0.5 rounded-full border border-slate-200">
+            ${expenseCategories.length} ${expenseCategories.length === 1 ? 'category' : 'categories'}
+          </span>
+        </div>
+        <span class="text-xs font-extrabold text-rose-600">$${totalSpent.toFixed(2)}</span>
+      `;
+      expHeaderBar.addEventListener('click', () => {
+        expensesCollapsed = !expensesCollapsed;
+        localStorage.setItem('budget_expenses_collapsed', JSON.stringify(expensesCollapsed));
+        renderOverview();
+      });
+      budgetProgressList.appendChild(expHeaderBar);
+
+      // Collapsible Container for Expenses
+      const expContainer = document.createElement('div');
+      expContainer.className = `space-y-2 transition-all ${expensesCollapsed ? 'hidden' : ''}`;
 
       if (expenseCategories.length === 0) {
-        budgetProgressList.innerHTML = `
-          <div class="text-center py-6 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 space-y-1">
-            <i class="ph ph-folder-open text-2xl"></i>
-            <p class="text-xs font-medium">No expense categories created yet.</p>
-            <button id="createFirstCatBtn" class="text-xs font-semibold text-indigo-600 hover:underline">Create your first category</button>
-          </div>
-        `;
-        const firstCatBtn = document.getElementById('createFirstCatBtn');
-        if (firstCatBtn) {
-          firstCatBtn.addEventListener('click', () => {
-            currentType = 'expense';
-            openQuickAddCategoryModal();
+        const emptyExp = document.createElement('div');
+        emptyExp.className = "text-center py-4 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 text-xs";
+        emptyExp.textContent = "No expense categories yet. Click '+ Expense' to add one.";
+        expContainer.appendChild(emptyExp);
+      } else {
+        expenseCategories.forEach((cat, index) => {
+          const rule = activeRules[cat] || templateBudgetRules[cat] || { fixed: 0, percent: 0 };
+          const baseBudget = rule.fixed || 0;
+          const dynamicBudget = (rule.percent && totalIncome > 0) ? (totalIncome * (rule.percent / 100)) : 0;
+          const totalBudget = baseBudget + dynamicBudget;
+
+          const spent = spentByCategory[cat] || 0;
+          const pctOfBudget = totalBudget > 0 ? (spent / totalBudget) * 100 : 0;
+          const isOver = totalBudget > 0 && spent > totalBudget;
+
+          const card = document.createElement('div');
+          card.className = "overview-cat-card p-3 bg-white rounded-2xl border border-slate-200/80 shadow-sm space-y-2 transition cursor-pointer hover:border-slate-300";
+          card.dataset.index = index;
+          card.dataset.category = cat;
+
+          let subcatListHtml = '';
+          const catSubs = subcategories[cat] || [];
+          if (catSubs.length > 0) {
+            subcatListHtml = `
+              <div class="pt-1.5 border-t border-slate-100 space-y-1">
+                ${catSubs.map(sub => {
+                  const sSpent = subcatSpent[`${cat}__${sub}`] || 0;
+                  const sRule = subcategoryRules[`${cat}__${sub}`] || { fixed: 0, percent: 0 };
+                  const sBase = sRule.fixed || 0;
+                  const sDyn = (sRule.percent && totalIncome > 0) ? (totalIncome * (sRule.percent / 100)) : 0;
+                  const sTotal = sBase + sDyn;
+                  const subBudgetLabel = sTotal > 0 ? ` / $${sTotal.toFixed(2)}` : '';
+
+                  return `
+                    <div class="flex items-center justify-between text-[11px] text-slate-500 pl-2">
+                      <span class="flex items-center gap-1 hover:text-indigo-600 transition subcat-item-label" data-cat="${cat}" data-sub="${sub}" title="Click to edit subcategory budget">
+                        • ${sub}
+                        <i class="ph-bold ph-pencil-simple text-[9px] text-slate-400"></i>
+                      </span>
+                      <span class="font-semibold text-slate-700">$${sSpent.toFixed(2)}${subBudgetLabel}</span>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            `;
+          }
+
+          card.innerHTML = `
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="overview-drag-handle text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing p-1 -m-1" title="Drag to reorder">
+                  <i class="ph-bold ph-dots-six-vertical text-sm"></i>
+                </span>
+                <span class="text-sm font-bold text-slate-800">${cat}</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <div class="text-right">
+                  <span class="text-xs font-bold ${isOver ? 'text-rose-600' : 'text-slate-800'}">$${spent.toFixed(2)}</span>
+                  <span class="text-[10px] text-slate-400 font-medium">/ $${totalBudget.toFixed(2)}</span>
+                </div>
+                <!-- Copy of Budgets Button inside each Category card -->
+                <button class="edit-single-cat-btn text-indigo-600 hover:text-indigo-800 p-1 rounded-lg hover:bg-indigo-50 border border-slate-200/80 transition" title="Edit Budget & View Purchases">
+                  <i class="ph-bold ph-sliders text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+              <div class="h-full rounded-full transition-all duration-300 ${
+                isOver ? 'bg-rose-500' : (pctOfBudget > 85 ? 'bg-amber-400' : 'bg-indigo-600')
+              }" style="width: ${Math.min(pctOfBudget, 100)}%"></div>
+            </div>
+
+            <div class="flex items-center justify-between text-[10px] text-slate-400 pt-0.5">
+              <span>${totalBudget > 0 ? `${pctOfBudget.toFixed(0)}% used` : 'No budget set'}</span>
+              <button class="add-subcat-btn text-indigo-600 hover:text-indigo-800 font-bold flex items-center gap-0.5" data-cat="${cat}">
+                <i class="ph-bold ph-plus text-[10px]"></i>
+                <span>Subcategory</span>
+              </button>
+            </div>
+
+            ${subcatListHtml}
+          `;
+
+          // Card Click: Drill down to view details & purchases
+          card.addEventListener('click', (e) => {
+            // Ignore if clicking drag handle, add subcat button, or subcat item
+            if (e.target.closest('.overview-drag-handle') || e.target.closest('.add-subcat-btn') || e.target.closest('.subcat-item-label')) {
+              return;
+            }
+            openCategoryDetailModal(cat);
           });
-        }
-        return;
+
+          card.querySelector('.add-subcat-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            openAddSubcatModal(cat);
+          });
+
+          card.querySelectorAll('.subcat-item-label').forEach(el => {
+            el.addEventListener('click', (e) => {
+              e.stopPropagation();
+              openAddSubcatModal(el.dataset.cat, el.dataset.sub);
+            });
+          });
+
+          expContainer.appendChild(card);
+        });
+
+        // Initialize drag-and-drop reordering for Overview category cards
+        initOverviewDragAndDrop();
       }
+      budgetProgressList.appendChild(expContainer);
 
-      expenseCategories.forEach((cat, index) => {
-        const rules = getRulesForCurrentMonth();
-        const rule = rules[cat] || { fixed: 0, percent: 0 };
-        const baseBudget = parseFloat(rule.fixed) || 0;
-        const percentBudget = totalIncome * ((parseFloat(rule.percent) || 0) / 100);
-        const computedBudget = baseBudget + percentBudget;
+      // 2. Budgeted Income Collapsible Section Header Bar
+      const incHeaderBar = document.createElement('div');
+      incHeaderBar.className = "flex items-center justify-between p-2.5 bg-emerald-50/80 hover:bg-emerald-100/70 border border-emerald-200/80 rounded-xl cursor-pointer select-none transition group mt-3";
+      incHeaderBar.title = "Click to expand or collapse Budgeted Income";
+      incHeaderBar.innerHTML = `
+        <div class="flex items-center gap-2">
+          <i class="ph-bold ${incomeCollapsed ? 'ph-caret-right' : 'ph-caret-down'} text-emerald-700 text-xs transition-transform duration-200"></i>
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-800">Budgeted Income</span>
+          <span class="text-[10px] font-semibold text-emerald-700 bg-white px-2 py-0.5 rounded-full border border-emerald-200">
+            ${incomeCategories.length} ${incomeCategories.length === 1 ? 'stream' : 'streams'}
+          </span>
+        </div>
+        <span class="text-xs font-extrabold text-emerald-700">+$${totalIncome.toFixed(2)}</span>
+      `;
+      incHeaderBar.addEventListener('click', () => {
+        incomeCollapsed = !incomeCollapsed;
+        localStorage.setItem('budget_income_collapsed', JSON.stringify(incomeCollapsed));
+        renderOverview();
+      });
+      budgetProgressList.appendChild(incHeaderBar);
 
-        const actual = spentByCategory[cat] || 0;
-        const pctUsed = computedBudget > 0 ? (actual / computedBudget) * 100 : (actual > 0 ? 100 : 0);
-        const isOver = computedBudget > 0 && actual > computedBudget;
-        const isRecurring = recurringCategories.includes(cat);
+      // Collapsible Container for Income
+      const incContainer = document.createElement('div');
+      incContainer.className = `space-y-2 transition-all ${incomeCollapsed ? 'hidden' : ''}`;
 
-        const card = document.createElement('div');
-        card.className = "bg-white p-3 rounded-xl border border-slate-200/80 space-y-1.5 transition hover:border-slate-300";
+      if (incomeCategories.length === 0) {
+        const emptyInc = document.createElement('div');
+        emptyInc.className = "text-center py-4 bg-slate-50 border border-slate-100 rounded-2xl text-slate-400 text-xs";
+        emptyInc.textContent = "No income streams configured. Click '+ Income' to add one.";
+        incContainer.appendChild(emptyInc);
+      } else {
+        incomeCategories.forEach(incCat => {
+          const received = incomeByCategory[incCat] || 0;
+          const incCard = document.createElement('div');
+          incCard.className = "p-3 bg-emerald-50/50 rounded-2xl border border-emerald-100/80 shadow-sm flex items-center justify-between";
+          incCard.innerHTML = `
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-xs">
+                <i class="ph-bold ph-arrow-down-left"></i>
+              </div>
+              <span class="text-sm font-bold text-slate-800">${incCat}</span>
+            </div>
+            <div class="text-right">
+              <span class="text-xs font-black text-emerald-700">+$${received.toFixed(2)}</span>
+            </div>
+          `;
+          incContainer.appendChild(incCard);
+        });
+      }
+      budgetProgressList.appendChild(incContainer);
+    }
+
+    // --- Overview Drag & Drop Reordering Logic ---
+    function initOverviewDragAndDrop() {
+      const cards = budgetProgressList.querySelectorAll('.overview-cat-card');
+      cards.forEach(card => {
+        const handle = card.querySelector('.overview-drag-handle');
+        if (!handle) return;
+
         card.draggable = true;
-        card.dataset.index = index;
 
-        card.innerHTML = `
-          <div class="flex items-center justify-between text-xs font-bold text-slate-800">
-            <div class="flex items-center gap-1.5">
-              <span class="overview-drag-handle text-slate-300 hover:text-slate-600 cursor-grab active:cursor-grabbing select-none" title="Drag to reorder">
-                <i class="ph-bold ph-dots-six-vertical text-sm"></i>
-              </span>
-              <span>${cat}</span>
-              ${isRecurring ? '<span title="Saved month-to-month" class="text-[10px] bg-amber-50 text-amber-700 px-1 rounded border border-amber-200">📌</span>' : ''}
-              ${rule.percent > 0 ? `<span class="text-[10px] font-medium text-indigo-600 bg-indigo-50 px-1.5 py-0.2 rounded-md">${rule.percent}%</span>` : ''}
-            </div>
-            <div>
-              <span class="${isOver ? 'text-rose-600' : 'text-slate-800'}">$${actual.toFixed(2)}</span>
-              <span class="text-slate-400 font-medium"> / $${computedBudget.toFixed(2)}</span>
-            </div>
-          </div>
-          <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-            <div class="h-full rounded-full transition-all duration-300 ${
-              isOver ? 'bg-rose-500' : (pctUsed > 85 ? 'bg-amber-500' : 'bg-indigo-600')
-            }" style="width: ${Math.min(pctUsed, 100)}%"></div>
-          </div>
-        `;
-
-        // Desktop Drag and Drop for Overview cards
         card.addEventListener('dragstart', (e) => {
-          e.dataTransfer.setData('text/plain', index.toString());
+          e.dataTransfer.setData('text/plain', card.dataset.index);
           e.dataTransfer.effectAllowed = 'move';
-          card.classList.add('opacity-40', 'border-indigo-400', 'bg-indigo-50/50');
+          card.classList.add('opacity-40', 'border-indigo-400');
         });
 
         card.addEventListener('dragend', () => {
-          card.classList.remove('opacity-40', 'border-indigo-400', 'bg-indigo-50/50');
-          document.querySelectorAll('#budgetProgressList > div').forEach(el => {
-            el.classList.remove('border-indigo-500', 'bg-indigo-50/30');
-          });
+          card.classList.remove('opacity-40', 'border-indigo-400');
+          cards.forEach(c => c.classList.remove('border-indigo-500', 'bg-indigo-50/20'));
         });
 
         card.addEventListener('dragover', (e) => {
           e.preventDefault();
           e.dataTransfer.dropEffect = 'move';
-          card.classList.add('border-indigo-500', 'bg-indigo-50/30');
+          card.classList.add('border-indigo-500');
         });
 
         card.addEventListener('dragleave', () => {
-          card.classList.remove('border-indigo-500', 'bg-indigo-50/30');
+          card.classList.remove('border-indigo-500');
         });
 
         card.addEventListener('drop', (e) => {
           e.preventDefault();
-          card.classList.remove('border-indigo-500', 'bg-indigo-50/30');
-          const fromIndex = parseInt(e.dataTransfer.getData('text/plain'), 10);
-          const toIndex = index;
-          if (isNaN(fromIndex) || fromIndex === toIndex) return;
-
-          catManagerType = 'expense';
-          reorderCategories(fromIndex, toIndex);
+          card.classList.remove('border-indigo-500');
+          const fromIdx = parseInt(e.dataTransfer.getData('text/plain'), 10);
+          const toIdx = parseInt(card.dataset.index, 10);
+          if (!isNaN(fromIdx) && !isNaN(toIdx) && fromIdx !== toIdx) {
+            const moved = expenseCategories.splice(fromIdx, 1)[0];
+            expenseCategories.splice(toIdx, 0, moved);
+            localStorage.setItem('budget_cats_expense', JSON.stringify(expenseCategories));
+            renderOverview();
+            updateCategoryDropdown();
+            showToast("Categories reordered");
+          }
         });
 
-        // Mobile touch reordering on Overview
-        let touchStartY = 0;
+        // Touch Drag & Drop for Mobile
         let isTouchDragging = false;
-
-        card.addEventListener('touchstart', (e) => {
-          const handle = e.target.closest('.overview-drag-handle');
-          if (!handle) return;
-          touchStartY = e.touches[0].clientY;
+        handle.addEventListener('touchstart', (e) => {
+          e.preventDefault();
           isTouchDragging = true;
           card.classList.add('bg-indigo-50', 'border-indigo-400');
-        }, { passive: true });
+        }, { passive: false });
 
-        card.addEventListener('touchmove', (e) => {
+        handle.addEventListener('touchmove', (e) => {
           if (!isTouchDragging) return;
+          e.preventDefault();
           const touchY = e.touches[0].clientY;
           const targetEl = document.elementFromPoint(e.touches[0].clientX, touchY);
-          const targetCard = targetEl ? targetEl.closest('#budgetProgressList > div') : null;
+          const targetCard = targetEl ? targetEl.closest('.overview-cat-card') : null;
 
-          document.querySelectorAll('#budgetProgressList > div').forEach(el => {
-            if (el !== targetCard) el.classList.remove('border-indigo-500');
+          cards.forEach(c => {
+            if (c !== targetCard) c.classList.remove('border-indigo-500');
           });
           if (targetCard && targetCard !== card) {
             targetCard.classList.add('border-indigo-500');
           }
-        }, { passive: true });
+        }, { passive: false });
 
-        card.addEventListener('touchend', (e) => {
+        handle.addEventListener('touchend', (e) => {
           if (!isTouchDragging) return;
           isTouchDragging = false;
           card.classList.remove('bg-indigo-50', 'border-indigo-400');
 
           const touchY = e.changedTouches[0].clientY;
           const targetEl = document.elementFromPoint(e.changedTouches[0].clientX, touchY);
-          const targetCard = targetEl ? targetEl.closest('#budgetProgressList > div') : null;
+          const targetCard = targetEl ? targetEl.closest('.overview-cat-card') : null;
 
           if (targetCard && targetCard !== card) {
             targetCard.classList.remove('border-indigo-500');
-            const toIndex = parseInt(targetCard.dataset.index, 10);
-            if (!isNaN(toIndex) && toIndex !== index) {
-              catManagerType = 'expense';
-              reorderCategories(index, toIndex);
+            const fromIdx = parseInt(card.dataset.index, 10);
+            const toIdx = parseInt(targetCard.dataset.index, 10);
+            if (!isNaN(fromIdx) && !isNaN(toIdx) && fromIdx !== toIdx) {
+              const moved = expenseCategories.splice(fromIdx, 1)[0];
+              expenseCategories.splice(toIdx, 0, moved);
+              localStorage.setItem('budget_cats_expense', JSON.stringify(expenseCategories));
+              renderOverview();
+              updateCategoryDropdown();
+              showToast("Categories reordered");
             }
           }
         });
-
-        budgetProgressList.appendChild(card);
       });
+    }
+
+    if (settingsDownloadExtBtn) {
+      settingsDownloadExtBtn.addEventListener('click', triggerChromeExtensionDownload);
+    }
+
+    if (settingsPhoneInstallBtn) {
+      settingsPhoneInstallBtn.addEventListener('click', () => {
+        settingsModal.classList.add('hidden');
+        mobileInstallModal.classList.remove('hidden');
+      });
+    }
+
+    if (syncNowBtn) {
+      syncNowBtn.addEventListener('click', async () => {
+        if (!scriptUrl) {
+          showToast("Configure Google Sheets URL first");
+          settingsModal.classList.remove('hidden');
+          return;
+        }
+        syncNowBtn.querySelector('i').classList.add('animate-spin');
+        showToast("Syncing with Google Sheets...");
+        try {
+          const res = await fetch(scriptUrl);
+          const data = await res.json();
+          if (data && data.transactions) {
+            transactions = data.transactions;
+            localStorage.setItem('budget_transactions', JSON.stringify(transactions));
+            renderRecentTransactions();
+            if (currentTab === 'overview') renderOverview();
+            showToast("✓ Cloud Sync Complete");
+          }
+        } catch (err) {
+          showToast("Sync completed locally");
+        } finally {
+          setTimeout(() => {
+            syncNowBtn.querySelector('i').classList.remove('animate-spin');
+          }, 600);
+        }
+      });
+    }
+
+    function triggerChromeExtensionDownload() {
+      if (typeof JSZip === 'undefined') {
+        showToast("Zip library loading, retry in a moment");
+        return;
+      }
+
+      showToast("Packaging Chrome Extension...");
+
+      try {
+        const zip = new JSZip();
+
+        const manifestContent = {
+          "manifest_version": 3,
+          "name": `Pocket Budget ${currentYear}`,
+          "version": "2.2",
+          "description": "Clean, real-time daily budget tracker and overview.",
+          "action": {
+            "default_popup": "index.html",
+            "default_title": `Pocket Budget ${currentYear}`
+          },
+          "permissions": ["storage"]
+        };
+        zip.file("manifest.json", JSON.stringify(manifestContent, null, 2));
+
+        const fullHtml = document.documentElement.outerHTML;
+        zip.file("index.html", fullHtml);
+
+        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 256 256"><rect width="256" height="256" rx="60" fill="#4f46e5"/><path d="M128,40A88,88,0,1,0,216,128,88.1,88.1,0,0,0,128,40Zm0,160a72,72,0,1,1,72-72A72.08,72.08,0,0,1,128,200Zm48-72a8,8,0,0,1-8,8H136v32a8,8,0,0,1-16,0V136H88a8,8,0,0,1,0-16h32V88a8,8,0,0,1,16,0v32h32A8,8,0,0,1,176,128Z" fill="#ffffff"/></svg>`;
+        zip.file("icon.svg", svgIcon);
+
+        const readmeContent = `# Pocket Budget Chrome Extension (${currentYear})
+## Installation Instructions:
+1. Extract this .zip file to a permanent folder on your computer.
+2. Open Google Chrome and visit: chrome://extensions/
+3. Turn on "Developer mode" in the top-right corner.
+4. Click "Load unpacked" in the top-left corner.
+5. Select the extracted folder containing manifest.json and index.html.
+6. Pin the extension to your toolbar for quick daily budgeting!`;
+        zip.file("README.md", readmeContent);
+
+        zip.generateAsync({ type: "blob" }).then((blob) => {
+          const downloadLink = document.createElement("a");
+          downloadLink.href = URL.createObjectURL(blob);
+          downloadLink.download = `Pocket-Budget-Extension-${currentYear}.zip`;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+          showToast("Extension downloaded!");
+        });
+      } catch (err) {
+        showToast("Error creating zip archive");
+      }
     }
 
     // --- Category Manager Logic ---
@@ -1121,7 +2430,7 @@
 
         item.innerHTML = `
           <div class="flex items-center gap-2">
-            <span class="drag-handle text-slate-400 hover:text-slate-600 select-none cursor-grab" title="Drag to reorder">
+            <span class="drag-handle text-slate-400 hover:text-slate-600 select-none cursor-grab p-0.5" title="Drag to reorder">
               <i class="ph-bold ph-dots-six-vertical text-sm"></i>
             </span>
             <span class="truncate max-w-[140px]">${cat}</span>
@@ -1141,7 +2450,6 @@
           </div>
         `;
 
-        // Desktop HTML5 Drag & Drop Listeners
         item.addEventListener('dragstart', (e) => {
           e.dataTransfer.setData('text/plain', index.toString());
           e.dataTransfer.effectAllowed = 'move';
@@ -1151,7 +2459,7 @@
         item.addEventListener('dragend', () => {
           item.classList.remove('opacity-40', 'border-indigo-400', 'bg-indigo-50/50');
           document.querySelectorAll('#categoryItemsList > div').forEach(el => {
-            el.classList.remove('border-indigo-500', 'bg-indigo-50/30', 'translate-y-0.5');
+            el.classList.remove('border-indigo-500', 'bg-indigo-50/30');
           });
         });
 
@@ -1175,20 +2483,18 @@
           reorderCategories(fromIndex, toIndex);
         });
 
-        // Touch drag-and-drop support for mobile screens
-        let touchStartY = 0;
+        const handle = item.querySelector('.drag-handle');
         let isTouchDragging = false;
 
-        item.addEventListener('touchstart', (e) => {
-          const handle = e.target.closest('.drag-handle');
-          if (!handle) return;
-          touchStartY = e.touches[0].clientY;
+        handle.addEventListener('touchstart', (e) => {
+          e.preventDefault();
           isTouchDragging = true;
           item.classList.add('bg-indigo-50', 'border-indigo-400');
-        }, { passive: true });
+        }, { passive: false });
 
-        item.addEventListener('touchmove', (e) => {
+        handle.addEventListener('touchmove', (e) => {
           if (!isTouchDragging) return;
+          e.preventDefault();
           const touchY = e.touches[0].clientY;
           const targetEl = document.elementFromPoint(e.touches[0].clientX, touchY);
           const targetItem = targetEl ? targetEl.closest('#categoryItemsList > div') : null;
@@ -1199,9 +2505,9 @@
           if (targetItem && targetItem !== item) {
             targetItem.classList.add('border-indigo-500');
           }
-        }, { passive: true });
+        }, { passive: false });
 
-        item.addEventListener('touchend', (e) => {
+        handle.addEventListener('touchend', (e) => {
           if (!isTouchDragging) return;
           isTouchDragging = false;
           item.classList.remove('bg-indigo-50', 'border-indigo-400');
@@ -1274,7 +2580,6 @@
         if (!monthlyBudgetLedger[monthKey]) monthlyBudgetLedger[monthKey] = {};
         if (!monthlyBudgetLedger[monthKey][name]) monthlyBudgetLedger[monthKey][name] = { fixed: 0, percent: 0 };
 
-        // Default new categories to recurring
         if (!recurringCategories.includes(name)) recurringCategories.push(name);
         localStorage.setItem('budget_cats_expense', JSON.stringify(expenseCategories));
         localStorage.setItem('budget_rules_monthly', JSON.stringify(templateBudgetRules));
@@ -1290,7 +2595,7 @@
       newCatInput.value = '';
       renderCategoryList();
       updateCategoryDropdown(name);
-      showToast(`Saved "${name}" across all months`);
+      showToast(`Saved "${name}"`);
     });
 
     clearAllCatsBtn.addEventListener('click', () => {
@@ -1316,8 +2621,6 @@
     });
 
     // --- Budget Targets & Income % Rules Controls ---
-    const saveAsFutureDefaultsCheckbox = document.getElementById('saveAsFutureDefaultsCheckbox');
-
     openPctModalBtn.addEventListener('click', () => {
       const currentMonthName = MONTH_NAMES[selectedMonth];
       modalEditingScope.textContent = `Editing Budgets for ${currentMonthName} ${selectedYear}`;
@@ -1326,7 +2629,7 @@
       if (expenseCategories.length === 0) {
         pctListContainer.innerHTML = `
           <div class="text-center py-6 text-slate-400 text-xs">
-            No expense categories created yet. Add categories using the tag icon or "+ New" first!
+            No expense categories created yet. Click "+ Expense" on the Overview page first!
           </div>
         `;
         pctModal.classList.remove('hidden');
@@ -1361,19 +2664,13 @@
           </div>
         `;
 
-        // Auto-select and highlight input text on click/focus so typing replaces the number
         const fixedInp = row.querySelector('.rule-fixed-input');
         const pctInp = row.querySelector('.rule-percent-input');
 
         [fixedInp, pctInp].forEach(inputEl => {
           if (!inputEl) return;
-          inputEl.addEventListener('focus', (e) => {
-            e.target.select();
-          });
-          inputEl.addEventListener('mouseup', (e) => {
-            // Prevents standard mouseup from deselecting text on click
-            e.preventDefault();
-          });
+          inputEl.addEventListener('focus', (e) => { e.target.select(); });
+          inputEl.addEventListener('mouseup', (e) => { e.preventDefault(); });
         });
 
         row.querySelector('.toggle-pct-recurring-btn').addEventListener('click', (e) => {
@@ -1386,13 +2683,16 @@
         });
 
         pctListContainer.appendChild(row);
-      });
-
-      pctModal.classList.remove('hidden');
     });
 
-    closePctModalBtn.addEventListener('click', () => pctModal.classList.add('hidden'));
+    pctModal.classList.remove('hidden');
+  });
 
+  if (closePctModalBtn) {
+    closePctModalBtn.addEventListener('click', () => pctModal.classList.add('hidden'));
+  }
+
+  if (savePctRulesBtn) {
     savePctRulesBtn.addEventListener('click', () => {
       const fixedInputs = pctListContainer.querySelectorAll('.rule-fixed-input');
       const monthKey = getMonthKey();
@@ -1410,11 +2710,8 @@
         const pctVal = parseFloat(matchingPctInp ? matchingPctInp.value : 0) || 0;
 
         const updatedRule = { fixed: fixedVal, percent: pctVal };
-
-        // Save specifically to this month's historical record
         monthlyBudgetLedger[monthKey][cat] = updatedRule;
 
-        // If checkbox is ticked, also update the default future baseline
         if (saveAsFutureDefaultsCheckbox && saveAsFutureDefaultsCheckbox.checked) {
           templateBudgetRules[cat] = updatedRule;
         }
@@ -1429,8 +2726,9 @@
       renderOverview();
       showToast(`Saved budgets for ${MONTH_NAMES[selectedMonth]} ${selectedYear}`);
     });
+  }
 
-    // --- Google Sheets Settings Modal ---
+  // --- Settings Modal & Sync Logic ---
     openSettingsModalBtn.addEventListener('click', () => {
       sheetsUrlInput.value = scriptUrl;
       settingsModal.classList.remove('hidden');
@@ -1445,33 +2743,14 @@
       showToast("Settings saved");
     });
 
-    // --- Mobile Install Modal Handlers ---
-    const openMobileInstallBtn = document.getElementById('openMobileInstallBtn');
-    const closeMobileInstallBtn = document.getElementById('closeMobileInstallBtn');
-    const mobileInstallModal = document.getElementById('mobileInstallModal');
-    const gotItMobileBtn = document.getElementById('gotItMobileBtn');
-
-    if (openMobileInstallBtn) {
-      openMobileInstallBtn.addEventListener('click', () => {
-        mobileInstallModal.classList.remove('hidden');
-      });
-    }
-    if (closeMobileInstallBtn) {
-      closeMobileInstallBtn.addEventListener('click', () => {
-        mobileInstallModal.classList.add('hidden');
-      });
-    }
-    if (gotItMobileBtn) {
-      gotItMobileBtn.addEventListener('click', () => {
-        mobileInstallModal.classList.add('hidden');
-      });
-    }
+    closeMobileInstallBtn.addEventListener('click', () => mobileInstallModal.classList.add('hidden'));
+    gotItMobileBtn.addEventListener('click', () => mobileInstallModal.classList.add('hidden'));
 
     // --- Dynamic Web Manifest for PWA Support ---
     (function injectManifest() {
       const manifest = {
         name: `Pocket Budget ${currentYear}`,
-        short_name: "Budget",
+        short_name: "PocketBudget",
         start_url: window.location.href,
         display: "standalone",
         background_color: "#ffffff",
@@ -1493,66 +2772,12 @@
       document.head.appendChild(link);
     })();
 
-    // --- One-Click Chrome Extension Download (.zip) ---
-    downloadExtBtn.addEventListener('click', () => {
-      if (typeof JSZip === 'undefined') {
-        showToast("Zip library loading, retry in a moment");
-        return;
-      }
-
-      showToast("Packaging Chrome Extension...");
-
-      try {
-        const zip = new JSZip();
-
-        const manifestContent = {
-          "manifest_version": 3,
-          "name": `Pocket Budget ${currentYear}`,
-          "version": "2.1",
-          "description": "Clean, real-time daily budget tracker and overview.",
-          "action": {
-            "default_popup": "index.html",
-            "default_title": `Pocket Budget ${currentYear}`
-          },
-          "permissions": ["storage"]
-        };
-        zip.file("manifest.json", JSON.stringify(manifestContent, null, 2));
-
-        const fullHtml = document.documentElement.outerHTML;
-        zip.file("index.html", fullHtml);
-
-        const svgIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 256 256"><rect width="256" height="256" rx="60" fill="#4f46e5"/><path d="M128,40A88,88,0,1,0,216,128,88.1,88.1,0,0,0,128,40Zm0,160a72,72,0,1,1,72-72A72.08,72.08,0,0,1,128,200Zm48-72a8,8,0,0,1-8,8H136v32a8,8,0,0,1-16,0V136H88a8,8,0,0,1,0-16h32V88a8,8,0,0,1,16,0v32h32A8,8,0,0,1,176,128Z" fill="#ffffff"/></svg>`;
-        zip.file("icon.svg", svgIcon);
-
-        const readmeContent = `# Pocket Budget Chrome Extension (${currentYear})
-## Installation Instructions:
-1. Extract this .zip file to a permanent folder on your computer.
-2. Open Google Chrome and visit: chrome://extensions/
-3. Turn on "Developer mode" in the top-right corner.
-4. Click "Load unpacked" in the top-left corner.
-5. Select the extracted folder containing manifest.json and index.html.
-6. Pin the extension to your toolbar for quick daily budgeting!`;
-        zip.file("README.md", readmeContent);
-
-        zip.generateAsync({ type: "blob" }).then((blob) => {
-          const downloadLink = document.createElement("a");
-          downloadLink.href = URL.createObjectURL(blob);
-          downloadLink.download = `Pocket-Budget-Extension-${currentYear}.zip`;
-          document.body.appendChild(downloadLink);
-          downloadLink.click();
-          document.body.removeChild(downloadLink);
-          showToast("Extension downloaded!");
-        });
-      } catch (err) {
-        showToast("Error creating zip archive");
-      }
-    });
-
     // --- Onload Initialization ---
     window.onload = function () {
       dateInput.value = getTodayLocalDateString();
       userHasManuallyChangedDate = false;
-      currentSubTitle.textContent = `Budget ${currentYear} • Real-time Sync`;
+      currentSubTitle.textContent = `Budget ${currentYear}`;
+      recentActivityHeading.textContent = "Recent Expenses";
       updatePaymentChips();
       updateCategoryDropdown();
       renderRecentTransactions();
